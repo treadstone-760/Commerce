@@ -3,10 +3,13 @@
 namespace App\Services\Auth;
 
 use App\Jobs\SendSmsJob;
+use App\Mail\ForgetPassword;
+use App\Models\PasswordReset;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class AuthService
 {
@@ -116,6 +119,35 @@ class AuthService
             ]);
 
             return Res('Server Error', 500);
+        }
+    }
+
+    public static function sendResetOtp($request){
+        try{
+
+            $user = User::where('email', $request->email)->first();
+            $otp = rand(100000, 999999);
+
+            $insert = PasswordReset::updateOrCreate(
+                ['email' => $request->email],
+                [
+                'token' => Hash::make($otp),
+                'expires_at' => now()->addMinutes(5),
+            ]);
+
+            Mail::to($request->email)->queue(new ForgetPassword($otp));
+         
+
+            return Res('OTP sent successfully. Please kindly check your email for the verification code.', 200);
+
+
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res("Server Error",500);
         }
     }
 }
