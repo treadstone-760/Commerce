@@ -81,4 +81,53 @@ class CategoryController extends Controller
             return Res('Server Error', 500);
         }
     }
+
+    public function update(Request $request , $id){
+        if(!auth()->user()->can('category.update')) {
+            return Res('Unauthorized', 401);
+        }
+
+        try{
+
+            $validate = Validator::make($request->all() , [
+                'name' => 'required|string',
+                'description' => 'required|string',
+                // 'parent_id' => 'nullable|exists:categories,id',
+                // 'is_active' => 'required|boolean',
+            ]);
+
+            if($validate->fails()){
+                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            }
+            return CategoryService::update($request , $id);
+
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res("Server Error",500);
+        }
+
+
+    }
+
+    public function delete($id){
+        if(!auth()->user()->can('category.delete')) {
+            return Res('Unauthorized', 401);
+        }
+        try{
+            return CategoryService::delete($id);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res("Server Error",500);
+        }
+    }
 }
