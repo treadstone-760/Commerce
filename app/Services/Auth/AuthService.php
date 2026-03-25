@@ -176,7 +176,7 @@ class AuthService
                 $newToken = Str::uuid()->toString();
 
                 $confirm_otp->update([
-                    'reset_token' => Hash::make($newToken), 
+                    'reset_token' => $newToken, 
                     'reset_token_expires_at' => now()->addMinutes(5),
                     "expires_at"=> now()
                 ]);
@@ -193,6 +193,41 @@ class AuthService
             ]);
 
             return Res('Server Error', 500);
+        }
+    }
+    
+    public static function resetPassword($request)
+    {
+        try {
+
+            $getResetToken = PasswordReset::where('reset_token', $request->reset_token)->where('reset_token_expires_at', '>', now())->first();
+
+
+            if (! $getResetToken) {
+                return Res('Invalid reset token / Expired', 400);
+            }
+
+            $user = User::where('email', $getResetToken->email)->first();
+
+
+            if (! $user) {
+                return Res('User not found', 404);
+            }
+
+            $user->update([
+                'password' => Hash::make($request->password),
+            ]);
+            $getResetToken->delete();
+
+            return Res('Password reset successful', 200);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+    
+            return Res('Server Error',500);
         }
     }
 }

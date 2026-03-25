@@ -56,4 +56,28 @@ class ForgotPassword extends Controller
             
         }
     }
+
+    public function resetPassword(Request $request){
+        try{
+            $validate = Validator::make(request()->all() , [
+                'reset_token' => 'required', 
+                'password' => 'required', 
+                'password_confirmation' => 'required|same:password', 
+            ]);
+
+            if($validate->fails()){
+                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            }
+            return AuthService::resetPassword($request);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res("Server Error",500);
+            
+        }
+    }
 }
