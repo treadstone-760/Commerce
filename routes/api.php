@@ -27,4 +27,5 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('view-category/{id}', [CategoryController::class, 'viewSingle']); 
     Route::put('update-category/{id}', [CategoryController::class, 'update']);
     Route::delete('delete-category/{id}', [CategoryController::class, 'delete']);
+    Route::put('status-update/{id}', [CategoryController::class, 'statusUpdate']);
 });

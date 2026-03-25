@@ -130,4 +130,19 @@ class CategoryController extends Controller
             return Res("Server Error",500);
         }
     }
+
+    public function statusUpdate(Request $request , $id){
+        if(!auth()->user()->can('category.status_update')) {
+            return Res('Unauthorized', 401);
+        }
+        try{
+            return CategoryService::statusUpdate($request , $id);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+        }
+    }
 }
