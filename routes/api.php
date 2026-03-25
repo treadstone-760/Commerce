@@ -25,4 +25,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('add-category', [CategoryController::class, 'add']);
     Route::get('view-category', [CategoryController::class, 'viewAll']);
     Route::get('view-category/{id}', [CategoryController::class, 'viewSingle']); 
+    Route::put('update-category/{id}', [CategoryController::class, 'update']);
+    Route::delete('delete-category/{id}', [CategoryController::class, 'delete']);
 });
