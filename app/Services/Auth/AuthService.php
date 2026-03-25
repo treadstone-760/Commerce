@@ -36,7 +36,10 @@ class AuthService
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            return Res('Login successful', 200, ['token' => $token]);
+            return Res('Login successful', 200, 
+            ['token' => $token ,
+            'redirect' => $user->user_type == "customer"? "customer" : "admin",
+             "user" => $user]);
 
         } catch (Exception $e) {
             Log::error([
