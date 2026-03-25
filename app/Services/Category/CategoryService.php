@@ -65,7 +65,7 @@ class CategoryService
 
             $data = Category::with('children')->find($id);
 
-            if (!$data) {
+            if (! $data) {
                 return Res('Category not found', 404);
             }
 
@@ -87,7 +87,7 @@ class CategoryService
         try {
 
             $category = Category::find($id);
-            if (!$category) {
+            if (! $category) {
                 return Res('Category not found', 404);
             }
             $data = [
@@ -105,6 +105,7 @@ class CategoryService
             }
 
             $category->update($data);
+
             return Res('Category updated successfully', 200, $category->toArray());
 
         } catch (Exception $e) {
@@ -123,10 +124,11 @@ class CategoryService
         try {
 
             $category = Category::find($id);
-            if (!$category) {
+            if (! $category) {
                 return Res('Category not found', 404);
             }
             $category->delete();
+
             return Res('Category deleted successfully', 200);
         } catch (Exception $e) {
             Log::error([
@@ -139,5 +141,28 @@ class CategoryService
         }
     }
 
+    public static function statusUpdate($request, $id)
+    {
+        try {
 
+            $category = Category::find($id);
+            if (! $category) {
+                return Res('Category not found', 404);
+            }
+            $data = [
+                'is_active' => ! $category->is_active,
+            ];
+            $category->update($data);
+
+            return Res('Category status updated successfully', 200, $category->toArray());
+
+        } catch (Exception $e) {
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+        }
+
+    }
 }
