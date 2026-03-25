@@ -33,4 +33,27 @@ class ForgotPassword extends Controller
             return Res("Server Error",500);
         }
     }
+
+     public function verifyResetPassword(Request $request){
+        try{
+            $validate = Validator::make(request()->all() , [
+                'email' => 'required|email|exists:users,email',
+                'otp' => 'required', 
+            ]);
+
+            if($validate->fails()){
+                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            }
+            return AuthService::verify_otp($request);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res("Server Error",500);
+            
+        }
+    }
 }

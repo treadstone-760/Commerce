@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('email')->index();
             $table->string('token');
             $table->timestamp('expires_at');
+            $table->string('reset_token')->nullable();
+            $table->timestamp('reset_token_expires_at')->nullable();
             $table->timestamps();
         });
     }

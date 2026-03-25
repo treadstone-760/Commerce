@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
-#[Fillable(['email', "expires_at", 'token'])]
+#[Fillable(['email', "expires_at", 'reset_token', 'reset_token_expires_at' , 'token'])]
 class PasswordReset extends Model
 {
     //
