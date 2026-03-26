@@ -13,5 +13,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 ])]
 class ProductVariant extends Model
 {
-    //
+    public function product(){
+        return $this->belongsTo(Product::class);
+    }
 }

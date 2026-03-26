@@ -15,4 +15,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 class Product extends Model
 {
     
+    public function ProductOption(){
+        return $this->hasMany(ProductOption::class);
+    }
+
+    public function ProductVariant(){
+        return $this->hasMany(ProductVariant::class);
+    }
+
 }
