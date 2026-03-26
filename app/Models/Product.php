@@ -10,7 +10,10 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
     'name',
     'description',
     'base_price',
-    'currency'
+    'currency',
+    "category_id",
+    'status'
+
 ])]
 class Product extends Model
 {
@@ -22,5 +25,11 @@ class Product extends Model
     public function ProductVariant(){
         return $this->hasMany(ProductVariant::class);
     }
+
+    public function category(){
+        return $this->belongsTo(Category::class);
+    }
+
+   
 
 }

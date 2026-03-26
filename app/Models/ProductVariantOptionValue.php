@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 
 #[Fillable([
     'product_variant_id',
+    'option_value_id'
     
 ])]
 class ProductVariantOptionValue extends Model

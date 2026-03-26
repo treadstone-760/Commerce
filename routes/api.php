@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Auth\ForgotPassword;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Models\Category;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Admin\Products\ProductController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -21,6 +22,7 @@ Route::post('reset-password', [ForgotPassword::class, 'resetPassword']);
 
 
 
+//Category
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('add-category', [CategoryController::class, 'add']);
     Route::get('view-category', [CategoryController::class, 'viewAll']);
@@ -28,4 +30,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::put('update-category/{id}', [CategoryController::class, 'update']);
     Route::delete('delete-category/{id}', [CategoryController::class, 'delete']);
     Route::put('status-update/{id}', [CategoryController::class, 'statusUpdate']);
+});
+
+//Products
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::post('add-product', [ProductController::class, 'addProduct']);
 });
