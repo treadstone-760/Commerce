@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Spatie\Permission\Models\Permission;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -16,34 +15,37 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
 
-        $user = User::where('email', "kboahene760@gmail.com")->first();
+        $user = User::where('email', 'test@gmail.com')->first();
 
-        //Create SuperAdmin Role
+        // Create SuperAdmin Role
         $super_admin = Role::firstOrCreate([
             'name' => 'super_admin',
             'guard_name' => 'sanctum',
         ]);
 
-        $user->assignRole($super_admin);
+        if ($user) {
+            $user->assignRole($super_admin);
 
-        //Create SuperAdmin Permission
-        // Products
-        $super_admin_permission = Permission::firstOrCreate(['name' => 'products.add','guard_name' => 'sanctum',]);
-        $super_admin_permission = Permission::firstOrCreate(['name' => 'products.edit','guard_name' => 'sanctum',]);
-        $super_admin_permission = Permission::firstOrCreate(['name' => 'products.show','guard_name' => 'sanctum',]);
-        $super_admin_permission = Permission::firstOrCreate(['name' => 'products.delete','guard_name' => 'sanctum',]);
-        $super_admin_permission = Permission::firstOrCreate(['name' => 'products.status_update','guard_name' => 'sanctum']);
+            // Create SuperAdmin Permission
+            // Products
+            $super_admin_permission = Permission::firstOrCreate(['name' => 'products.add', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name' => 'products.edit', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name' => 'products.show', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name' => 'products.delete', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name' => 'products.status_update', 'guard_name' => 'sanctum']);
 
-        //category
-        $super_admin_permission = Permission::firstOrCreate(['name' => 'category.add','guard_name' => 'sanctum']);
-        $super_admin_permission = Permission::firstOrCreate(['name' => 'category.edit','guard_name' => 'sanctum']);
-        $super_admin_permission = Permission::firstOrCreate(['name' => 'category.show','guard_name' => 'sanctum']);
-        $super_admin_permission = Permission::firstOrCreate(['name' => 'category.delete','guard_name' => 'sanctum']);
-        $super_admin_permission = Permission::firstOrCreate(['name' => 'category.status_update','guard_name' => 'sanctum']);
+            // category
+            $super_admin_permission = Permission::firstOrCreate(['name' => 'category.add', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name' => 'category.edit', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name' => 'category.show', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name' => 'category.delete', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name' => 'category.status_update', 'guard_name' => 'sanctum']);
 
-        //get all permission of super admin role (just the name)
-        $super_admin_permission = Permission::pluck('name')->toArray();
+            // get all permission of super admin role (just the name)
+            $super_admin_permission = Permission::pluck('name')->toArray();
 
-        $super_admin->syncPermissions($super_admin_permission);
+            $super_admin->syncPermissions($super_admin_permission);
+        }
+
     }
 }
