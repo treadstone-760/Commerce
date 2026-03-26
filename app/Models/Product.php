@@ -11,7 +11,8 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
     'description',
     'base_price',
     'currency',
-    "category_id"
+    "category_id",
+    'status'
 
 ])]
 class Product extends Model

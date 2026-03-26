@@ -3,32 +3,60 @@
 namespace App\Http\Controllers\Api\Admin\Products;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Services\Product\ProductService;
 
 class ProductController extends Controller
 {
     public function addProduct(Request $request)
     {
-        try{
+        try {
 
-            $validate = Validator::make(request()->all() , [
-                    'name' => 'required|string',
-                    'description' => 'required|string',
-                    'base_price' => 'required|numeric',
-                    'category_id' => 'required|exists:categories,id',
-            ]);
+            $validate = [
+                'name' => 'required|string',
+                'description' => 'required|string',
+                'base_price' => 'required|numeric',
+                'category_id' => 'required|exists:categories,id',
+                'currency' => 'required|string',
+                'options' => 'nullable|array',
+                'variants' => 'nullable|array',
 
-        }catch(Exception $e){
+            ];
+
+            if ($request->has('options')) {
+                $validate = array_merge($validate, [
+                    'options.*.name' => 'required|string',
+
+                    'options.*.values' => 'required|array',
+                    'options.*.values.*' => 'required|string',
+                ]);
+            }
+            if ($request->has('variants')) {
+                $validate = array_merge($validate, [
+                    'variants.*.sku' => 'required|string',
+                    'variants.*.price' => 'required|numeric',
+                    'variants.*.stock' => 'required|integer',
+                    'variants.*.attributes' => 'required|array',
+                ]);
+            }
+
+            $validate = Validator::make(request()->all(), $validate);
+            if($validate->fails()){
+                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            }
+            return ProductService::addProduct($request);
+
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
-            return Res("Server Error",500);
+
+            return Res('Server Error', 500);
         }
     }
-
 }
