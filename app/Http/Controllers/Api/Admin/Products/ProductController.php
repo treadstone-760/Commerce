@@ -79,4 +79,20 @@ class ProductController extends Controller
             return Res('Server Error', 500);
         }
     }
+
+    public function retrieveProductByCategory($id){
+        try{
+            if(!auth()->user()->can('products.show')){
+                return Res("Unauthorized" , 401);
+            }
+            return ProductService::viewByCategory($id);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Server Error', 500);
+        }
+    }
 }

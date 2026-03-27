@@ -10,6 +10,7 @@ use App\Models\ProductVariantOptionValue;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\Category;
 
 class ProductService
 {
@@ -127,5 +128,34 @@ class ProductService
 
             return Res('Server Error', 500);
         }
+    }
+
+    public static function viewByCategory($id){
+        try{
+            $data = Category::with([
+                'Product' => function ($query) {
+                    $query->with([
+                        'ProductOption' => function ($query) {
+                            $query->with('ProductOptionValue');
+                        }, 
+                        'productVariant' => function ($query) {
+                            $query->with('ProductVariantOptionValue');
+                        }
+                    ]);
+                }])->find($id)->toArray();
+
+            return Res('Products', 200, [
+                'category' => $data
+            ]);
+            
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Server Error', 500);
+        }
+        
     }
 }
