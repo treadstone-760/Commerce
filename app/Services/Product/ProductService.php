@@ -141,7 +141,7 @@ class ProductService
                         'productVariant' => function ($query) {
                             $query->with('ProductVariantOptionValue');
                         }
-                    ]);
+                    ])->where('status', 1);
                 }])->find($id)->toArray();
 
             return Res('Products', 200, [
@@ -157,5 +157,50 @@ class ProductService
             return Res('Server Error', 500);
         }
         
+    }
+
+    public static function viewSingle($id){
+        try{
+            $data = Product::with([
+                'ProductOption' => function ($query) {
+                    $query->with('ProductOptionValue');
+                }, 
+                'productVariant' => function ($query) {
+                    $query->with('ProductVariantOptionValue');
+                }])->find($id);
+
+            if(!$data){
+                return Res('Product not found', 404);
+            }
+            return Res('Product', 200, [
+                'product' => $data->toArray()
+            ]);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Server Error', 500);
+        }
+    }
+
+    public static function changeProductStatus($id){
+        try{
+            $product = Product::find($id);
+            if(!$product){
+                return Res('Product not found', 404);
+            }
+            $product->status = !$product->status;
+            $product->save();
+            return Res('Product status changed successfully', 200);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Server Error', 500);
+        }
     }
 }
