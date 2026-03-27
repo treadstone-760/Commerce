@@ -13,6 +13,10 @@ class ProductController extends Controller
 {
     public function addProduct(Request $request)
     {
+        if(!auth()->user()->can('products.add')){
+            return Res("Unauthorized" , 401);
+        }
+        
         try {
 
             $validate = [
@@ -56,6 +60,22 @@ class ProductController extends Controller
                 'file' => $e->getFile(),
             ]);
 
+            return Res('Server Error', 500);
+        }
+    }
+
+    public function showAllProduct(){
+        try{
+            if(!auth()->user()->can('products.show')){
+                return Res("Unauthorized" , 401);
+            }
+            return ProductService::viewAll();
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
             return Res('Server Error', 500);
         }
     }
