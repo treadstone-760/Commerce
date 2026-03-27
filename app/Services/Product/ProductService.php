@@ -81,7 +81,6 @@ class ProductService
                             }
 
                         }
-                     
 
                     }
                 }
@@ -94,6 +93,32 @@ class ProductService
 
         } catch (Exception $e) {
             DB::rollBack();
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Server Error', 500);
+        }
+    }
+
+    public static function viewAll()
+    {
+        try {
+
+            $data = Product::with([
+                'ProductOption' => function ($query) {
+                    $query->with('ProductOptionValue');
+                }, 
+                'productVariant' => function ($query) {
+                    $query->with('ProductVariantOptionValue');
+                }])
+                ->get()->toArray();
+
+            return Res('Products', 200, $data);
+
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
