@@ -36,4 +36,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('add-product', [ProductController::class, 'addProduct']);
     Route::get('view-all-product', [ProductController::class, 'showAllProduct']); 
+    Route::get('view-product-by-category/{id}', [ProductController::class, 'retrieveProductByCategory']);
 });
+
