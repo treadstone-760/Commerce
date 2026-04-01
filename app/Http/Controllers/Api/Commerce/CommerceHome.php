@@ -96,4 +96,27 @@ class CommerceHome extends Controller
             return Res('Something went wrong', 500);
         }
     }
+
+    public function viewSingleCategoryWithProducts($id){
+        try{
+            $category = Category::with(['products'])
+                ->withCount(['children', 'products'])
+                ->where('id', $id)
+                // ->where('is_active', 1)
+                ->first();
+
+            return Res('Category', 200, [
+                'category' => $category
+            ]);
+        }catch(Exception $e){
+
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Something went wrong', 500);
+        }
+    }
 }
