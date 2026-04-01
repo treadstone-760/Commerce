@@ -57,6 +57,8 @@ class ForgotPassword extends Controller
         }
     }
 
+    
+
     public function resetPassword(Request $request){
         try{
             $validate = Validator::make(request()->all() , [
