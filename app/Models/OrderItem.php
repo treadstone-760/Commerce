@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
     'order_id',
     'product_id',
     'quantity',
+    'unit_price',
     'total_price'
 ])]
 class OrderItem extends Model
