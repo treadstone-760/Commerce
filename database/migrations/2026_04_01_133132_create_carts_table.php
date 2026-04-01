@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('cart_id')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->integer('price');
+            $table->double('price' , 10, 2);
+            $table->foreignId('product_variant_id')->nullable()->constrained()->onDelete('cascade');
             $table->integer('quantity');
             $table->string('status');
             $table->timestamps();

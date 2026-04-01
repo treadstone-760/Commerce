@@ -17,7 +17,8 @@ return new class extends Migration
             $table->double('sub_total' , 10, 2);
             $table->double('total_amount' , 10, 2);
             $table->string('status');
-            $table->foreignId('address_id')->constrained()->onDelete('cascade');
+            // $table->foreignId('address_id')->constrained()->onDelete('cascade');
+            $table->integer('address_id');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
     'user_id',
     'product_id',
     'price',
+    'product_variant_id',
     'quantity',
     'status',
     'cart_id'

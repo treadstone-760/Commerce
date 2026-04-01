@@ -114,7 +114,9 @@ class ProductService
                 }, 
                 'productVariant' => function ($query) {
                     $query->with('ProductVariantOptionValue');
-                }])
+                }
+                ]
+                )
                 ->get()->toArray();
 
             return Res('Products', 200, $data);
