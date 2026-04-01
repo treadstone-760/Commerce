@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Admin\Products\ProductController;
+use App\Http\Controllers\Api\Commerce\CommerceHome;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -40,4 +41,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('view-single-product/{id}', [ProductController::class, 'retrieveSingleProduct']);
     Route::post('change-product-status/{id}', [ProductController::class, 'changeProductStatus']);
 });
+
+
+//Commerce
+Route::get('get/product' , [ CommerceHome::class, 'getProducts']);
+Route::get('get/product/{id}' , [ CommerceHome::class, 'viewsingleProduct']);
+Route::get('get/category' , [ CommerceHome::class, 'getCategories']);
+Route::get('get/category/{id}' , [ CommerceHome::class, 'viewSingleCategoryWithProducts']);
 
