@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
 #[Fillable([
-    'invoice_numnber',
+    'invoice_number',
     'status',
     'sub_total',
     'total_amount',

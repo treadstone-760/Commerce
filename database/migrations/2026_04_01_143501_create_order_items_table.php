@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->double('unit_price', 10, 2);
             $table->double('total_price', 10, 2);
+            $table->foreignId('product_variant_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
