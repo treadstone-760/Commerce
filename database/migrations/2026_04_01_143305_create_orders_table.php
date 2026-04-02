@@ -13,12 +13,11 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->string('invoice_numnber');
+            $table->string('invoice_number');
             $table->double('sub_total' , 10, 2);
             $table->double('total_amount' , 10, 2);
             $table->string('status');
-            // $table->foreignId('address_id')->constrained()->onDelete('cascade');
-            $table->integer('address_id');
+            $table->integer('address_id')->nullable;
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
