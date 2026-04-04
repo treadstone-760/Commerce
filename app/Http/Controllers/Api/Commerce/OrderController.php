@@ -8,10 +8,11 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Services\PaymentService;
 
 class OrderController extends Controller
 {
@@ -38,14 +39,30 @@ class OrderController extends Controller
                     'message' => 'Invalid variant for this product',
                 ], 400);
             }
+            $userId = Auth::guard('sanctum')->user() ?? null;
+
+            // Check if product already exist in cart
+            $checkCart = Cart::where('product_id', $id)
+                ->where('product_variant_id', $variant->id)
+                ->where(function ($query) use ($userId, $request) {
+                    $query->where('user_id', optional($userId)->id)
+                        ->orWhere('cart_id', $request->header('X-Cart-Id'));
+                })
+                ->first();
+
+            if ($checkCart) {
+                return Res(
+                    'Product already exist in cart',
+                    400
+                );
+            }
 
             // 4. Determine owner (user or guest)
-            $userId = auth()?->id();
             $cartId = $request->header('X-Cart-Id');
 
             if (! $userId && ! $cartId) {
                 return Res(
-                    'Cart ID required for guest users', 400);
+                    'Guest Header X-Cart-Id required for guest users', 400);
             }
 
             // 5. Check if item already exists
@@ -53,7 +70,8 @@ class OrderController extends Controller
                 ->where('product_variant_id', $variant->id);
 
             if ($userId) {
-                $cartQuery->where('user_id', $userId);
+
+                $cartQuery->where('user_id', $userId->id);
             } else {
                 $cartQuery->where('cart_id', $cartId);
             }
@@ -76,7 +94,7 @@ class OrderController extends Controller
             $cart = new Cart;
 
             if ($userId) {
-                $cart->user_id = $userId;
+                $cart->user_id = $userId->id;
             } else {
                 $cart->cart_id = $cartId;
             }
@@ -85,7 +103,7 @@ class OrderController extends Controller
             $cart->product_variant_id = $variant->id;
             $cart->quantity = $request->quantity ?? 1;
             $cart->price = $variant->price;
-            $cart->status = 'pending';
+            // $cart->status = 'pending';
 
             $cart->save();
 
@@ -98,7 +116,7 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                // 'trace' => $e->getTraceAsString(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
@@ -170,15 +188,15 @@ class OrderController extends Controller
             DB::commit();
 
             // Redirect to payment gateway
-              $payment = new PaymentService();
+            $payment = new PaymentService;
 
-              $response = $payment->makePayment([
-                  'email' => auth()->user()->email,
-                  'amount' => $order->total_amount * 100,
-                  'reference' => $order->invoice_numnber,
-              ]);
+            $response = $payment->makePayment([
+                'email' => auth()->user()->email,
+                'amount' => $order->total_amount * 100,
+                'reference' => $order->invoice_numnber,
+            ]);
 
-              return $response;
+            return $response;
 
             return Res('Order created successfully', 200, $order->toArray());
 
@@ -189,6 +207,7 @@ class OrderController extends Controller
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+
             return Res('Server Error', 500);
         }
 
