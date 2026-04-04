@@ -11,6 +11,7 @@ use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\PaymentService;
 
 class OrderController extends Controller
 {
@@ -169,6 +170,16 @@ class OrderController extends Controller
             DB::commit();
 
             // Redirect to payment gateway
+              $payment = new PaymentService();
+
+              $response = $payment->makePayment([
+                  'email' => auth()->user()->email,
+                  'amount' => $order->total_amount * 100,
+                  'reference' => $order->invoice_numnber,
+              ]);
+
+              return $response;
+
             return Res('Order created successfully', 200, $order->toArray());
 
         } catch (\Exception $e) {
@@ -178,7 +189,6 @@ class OrderController extends Controller
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
-
             return Res('Server Error', 500);
         }
 
