@@ -9,12 +9,12 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\PaymentService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Exception;
 
 class OrderController extends Controller
 {
@@ -30,25 +30,21 @@ class OrderController extends Controller
             }
 
             // 1. Validate input
-            $validate = Validator::make($request->all() , [
+            $validate = Validator::make($request->all(), [
                 'product_variant_id' => 'nullable|exists:product_variants,id',
                 'quantity' => 'nullable|integer|min:1',
             ]);
 
             if ($validate->fails()) {
-                return Res("Validation error", 400 , $validate->errors()->toArray());
-            }   
-            
+                return Res('Validation error', 400, $validate->errors()->toArray());
+            }
 
             // 2. Get product
             $variant = Product::with([
-                "productVariant" => function ($query) use ($request) {
-                    $query->where('id' , $request->product_variant_id);
-                }
+                'productVariant' => function ($query) use ($request) {
+                    $query->where('id', $request->product_variant_id);
+                },
             ])->find($id);
-
-            
-
 
             // 3. Get variant (direct query - better)
             // $variant = ProductVariant::where('id', $request->product_variant_id)
@@ -61,8 +57,6 @@ class OrderController extends Controller
                     'message' => 'Sorry product not found',
                 ], 400);
             }
-
-            
 
             // Check if product already exist in cart (both user and guest)
             // $checkCart = Cart::where('product_id', $id)
@@ -80,7 +74,6 @@ class OrderController extends Controller
             //     );
             // }
 
-           
             // 5. Check if item already exists update quantity when its added to cart again
             $cartQuery = Cart::where('product_id', $id)
                 ->where('product_variant_id', $request->product_variant_id);
@@ -115,8 +108,8 @@ class OrderController extends Controller
             $cart->product_id = $id;
             $cart->product_variant_id = $variant->productVariant->first()->id;
             $cart->quantity = $request->quantity ?? 1;
-            $cart->price = $variant->productVariant->first()->price ?? $variant->base_price; 
-           
+            $cart->price = $variant->productVariant->first()->price ?? $variant->base_price;
+
             $cart->save();
 
             return Res(
@@ -125,7 +118,7 @@ class OrderController extends Controller
                 $cart->toArray()
             );
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 // 'trace' => $e->getTraceAsString(),
@@ -138,24 +131,28 @@ class OrderController extends Controller
         }
     }
 
-
-    public function viewCart(Request $request){
+    public function viewCart(Request $request)
+    {
         try {
             $userId = Auth::guard('sanctum')->user() ?? null;
             $cartId = $request->header('X-Cart-Id') ?? null;
 
-            //Guest authentication required
-            if(! $userId && ! $cartId) {
+            // Guest authentication required
+            if (! $userId && ! $cartId) {
                 return Res(
                     'Guest Header X-Cart-Id required for guest users', 400);
-            } 
+            }
 
-            $cart = Cart::with(['product' , 'productVariant' ]) ->where(function ($query) use ($userId, $cartId) {
-                $query->where('user_id', optional($userId)->id)
-                    ->orWhere('cart_id', $cartId);
-            })->get();
+            $query = Cart::with(['product', 'productVariant']);
 
-            
+            if ($userId) {
+                $query->where('user_id', $userId->id);
+            } else {
+                $query->where('cart_id', $cartId);
+            }
+
+            $cart = $query->get();
+
 
             return Res(
                 'Cart retrieved',
@@ -163,7 +160,7 @@ class OrderController extends Controller
                 $cart->toArray()
             );
 
-        }catch(Exception $e){
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
@@ -173,7 +170,6 @@ class OrderController extends Controller
             return Res('Something went wrong', 500);
         }
     }
-
 
     public function checkout(Request $request)
     {
@@ -246,9 +242,10 @@ class OrderController extends Controller
             ]);
 
             return $response;
+
             return Res('Order created successfully', 200, $order->toArray());
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error([
                 'message' => $e->getMessage(),
