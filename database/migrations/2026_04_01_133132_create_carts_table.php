@@ -20,7 +20,7 @@ return new class extends Migration
             $table->double('price' , 10, 2);
             $table->foreignId('product_variant_id')->nullable()->constrained()->onDelete('cascade');
             $table->integer('quantity');
-            $table->string('status');
+            // $table->string('status');
             $table->timestamps();
         });
     }
