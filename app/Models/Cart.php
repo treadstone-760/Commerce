@@ -18,4 +18,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 class Cart extends Model
 {
     protected $table = 'carts';
+
+    public function product(){
+        return $this->belongsTo(Product::class);
+    }
+
+    public function productVariant(){
+        return $this->belongsTo(ProductVariant::class);
+    }
 }

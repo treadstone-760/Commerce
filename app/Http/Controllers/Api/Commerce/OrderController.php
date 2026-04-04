@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Exception;
 
 class OrderController extends Controller
 {
@@ -137,6 +138,43 @@ class OrderController extends Controller
         }
     }
 
+
+    public function viewCart(Request $request){
+        try {
+            $userId = Auth::guard('sanctum')->user() ?? null;
+            $cartId = $request->header('X-Cart-Id') ?? null;
+
+            //Guest authentication required
+            if(! $userId && ! $cartId) {
+                return Res(
+                    'Guest Header X-Cart-Id required for guest users', 400);
+            } 
+
+            $cart = Cart::with(['product' , 'productVariant' ]) ->where(function ($query) use ($userId, $cartId) {
+                $query->where('user_id', optional($userId)->id)
+                    ->orWhere('cart_id', $cartId);
+            })->get();
+
+            
+
+            return Res(
+                'Cart retrieved',
+                200,
+                $cart->toArray()
+            );
+
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Something went wrong', 500);
+        }
+    }
+
+
     public function checkout(Request $request)
     {
         // TODO: Implement checkout logic
@@ -208,7 +246,6 @@ class OrderController extends Controller
             ]);
 
             return $response;
-
             return Res('Order created successfully', 200, $order->toArray());
 
         } catch (\Exception $e) {
