@@ -13,51 +13,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
     public function addToCart(Request $request, $id)
     {
         try {
-
-            // 1. Validate input
-            $request->validate([
-                'product_variant_id' => 'required|exists:product_variants,id',
-                'quantity' => 'nullable|integer|min:1',
-            ]);
-
-            // 2. Get product
-            $product = Product::findOrFail($id);
-
-            // 3. Get variant (direct query - better)
-            $variant = ProductVariant::where('id', $request->product_variant_id)
-                ->where('product_id', $id)
-                ->first();
-
-            if (! $variant) {
-                return response()->json([
-                    'message' => 'Invalid variant for this product',
-                ], 400);
-            }
             $userId = Auth::guard('sanctum')->user() ?? null;
-
-            // Check if product already exist in cart
-            $checkCart = Cart::where('product_id', $id)
-                ->where('product_variant_id', $variant->id)
-                ->where(function ($query) use ($userId, $request) {
-                    $query->where('user_id', optional($userId)->id)
-                        ->orWhere('cart_id', $request->header('X-Cart-Id'));
-                })
-                ->first();
-
-            if ($checkCart) {
-                return Res(
-                    'Product already exist in cart',
-                    400
-                );
-            }
-
-            // 4. Determine owner (user or guest)
             $cartId = $request->header('X-Cart-Id');
 
             if (! $userId && ! $cartId) {
@@ -65,28 +28,77 @@ class OrderController extends Controller
                     'Guest Header X-Cart-Id required for guest users', 400);
             }
 
-            // 5. Check if item already exists
+            // 1. Validate input
+            $validate = Validator::make($request->all() , [
+                'product_variant_id' => 'nullable|exists:product_variants,id',
+                'quantity' => 'nullable|integer|min:1',
+            ]);
+
+            if ($validate->fails()) {
+                return Res("Validation error", 400 , $validate->errors()->toArray());
+            }   
+            
+
+            // 2. Get product
+            $variant = Product::with([
+                "productVariant" => function ($query) use ($request) {
+                    $query->where('id' , $request->product_variant_id);
+                }
+            ])->find($id);
+
+            
+
+
+            // 3. Get variant (direct query - better)
+            // $variant = ProductVariant::where('id', $request->product_variant_id)
+            //     ->where('product_id', $id)
+            //     ->first();
+
+            // if There is no variant use the product id instead
+            if (! $variant) {
+                return response()->json([
+                    'message' => 'Sorry product not found',
+                ], 400);
+            }
+
+            
+
+            // Check if product already exist in cart (both user and guest)
+            // $checkCart = Cart::where('product_id', $id)
+            //     ->where('product_variant_id', $variant->productVariant->first()->id)
+            //     ->where(function ($query) use ($userId, $request) {
+            //         $query->where('user_id', optional($userId)->id)
+            //             ->orWhere('cart_id', $request->header('X-Cart-Id'));
+            //     })
+            //     ->first();
+
+            // if ($checkCart) {
+            //     return Res(
+            //         'Product already exist in cart',
+            //         400
+            //     );
+            // }
+
+           
+            // 5. Check if item already exists update quantity when its added to cart again
             $cartQuery = Cart::where('product_id', $id)
-                ->where('product_variant_id', $variant->id);
+                ->where('product_variant_id', $request->product_variant_id);
 
             if ($userId) {
-
                 $cartQuery->where('user_id', $userId->id);
             } else {
                 $cartQuery->where('cart_id', $cartId);
             }
-
             $existingCart = $cartQuery->first();
-
             if ($existingCart) {
                 // ✅ Update quantity instead of creating new row
-                $existingCart->quantity += $request->quantity ?? 1;
+                $existingCart->quantity += 1;
                 $existingCart->save();
 
                 return Res(
                     'Cart updated',
                     200,
-                    $existingCart
+                    $existingCart->toArray()
                 );
             }
 
@@ -100,11 +112,10 @@ class OrderController extends Controller
             }
 
             $cart->product_id = $id;
-            $cart->product_variant_id = $variant->id;
+            $cart->product_variant_id = $variant->productVariant->first()->id;
             $cart->quantity = $request->quantity ?? 1;
-            $cart->price = $variant->price;
-            // $cart->status = 'pending';
-
+            $cart->price = $variant->productVariant->first()->price ?? $variant->base_price; 
+           
             $cart->save();
 
             return Res(
