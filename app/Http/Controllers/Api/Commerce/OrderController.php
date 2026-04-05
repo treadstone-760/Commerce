@@ -143,7 +143,10 @@ class OrderController extends Controller
                     'Guest Header X-Cart-Id required for guest users', 400);
             }
 
-            $query = Cart::with(['product', 'productVariant']);
+            $query = Cart::with(['product',
+                'productVariant' => function ($query) {
+                    $query->with('ProductVariantOptionValue');
+                }]);
 
             if ($userId) {
                 $query->where('user_id', $userId->id);
@@ -152,7 +155,6 @@ class OrderController extends Controller
             }
 
             $cart = $query->get();
-
 
             return Res(
                 'Cart retrieved',
@@ -197,11 +199,13 @@ class OrderController extends Controller
                     $cart->save();
                 }
             }
-            $carts = Cart::where('user_id', auth()->id())->get();
+            $carts = Cart::where('user_id', Auth()->user()->id)->get();
+
             $total_price = 0;
             if ($carts->isEmpty()) {
                 return Res('Cart is empty', 400);
             }
+
             foreach ($carts as $cart) {
                 $product = Product::findOrFail($cart->product_id);
                 $variant = ProductVariant::findOrFail($cart->product_variant_id);
@@ -217,7 +221,8 @@ class OrderController extends Controller
             $order->total_amount = $total_price;
             $order->sub_total = $total_price;
             $order->status = 'pending';
-            $order->invoice_numnber = invoiceNumber(10);
+            $order->invoice_number = invoiceNumber(10);
+            $order->address_id = 1;
             $order->save();
             foreach ($carts as $cart) {
                 $order_item = new OrderItem;
@@ -230,7 +235,6 @@ class OrderController extends Controller
                 $order_item->save();
                 $cart->delete();
             }
-            DB::commit();
 
             // Redirect to payment gateway
             $payment = new PaymentService;
@@ -238,12 +242,12 @@ class OrderController extends Controller
             $response = $payment->makePayment([
                 'email' => auth()->user()->email,
                 'amount' => $order->total_amount * 100,
-                'reference' => $order->invoice_numnber,
+                'reference' => $order->invoice_number,
             ]);
 
-            return $response;
+            DB::commit();
 
-            return Res('Order created successfully', 200, $order->toArray());
+            return Res('Order created successfully', 200, $response->json());
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -256,5 +260,69 @@ class OrderController extends Controller
             return Res('Server Error', 500);
         }
 
+    }
+
+    public function PaystackWebhook(Request $request)
+    {
+        try {
+            $signature = $request->header('x-paystack-signature');
+
+            $computed = hash_hmac(
+                'sha512',
+                $request->getContent(),
+                env('Paystack_secret')
+            );
+
+            if (! hash_equals($signature, $computed)) {
+                Log::warning('Invalid Paystack signature');
+
+                return response()->json(['status' => 'invalid signature'], 403);
+            }
+
+            $event = $request->all();
+            if ($event['event'] === 'charge.success') {
+
+                $reference = $event['data']['reference'];
+                $amount = $event['data']['amount'] / 100; 
+
+                // 4. Find order
+                $order = Order::where('invoice_number', $reference)->first();
+
+                if (!$order) {
+                    Log::error("Order not found: {$reference}");
+                    return response()->json(['status' => 'order not found'], 404);
+                }
+
+                // 5. Prevent duplicate updates
+                if ($order->status === 'paid') {
+                    return response()->json(['status' => 'already processed']);
+                }
+
+                // 6. Verify amount
+                if ($amount != $order->total_amount ) {
+                    Log::error($amount . ' => ' . $order->total_samount);
+                    Log::error("Amount mismatch for {$reference}");
+
+                    return response()->json(['status' => 'amount mismatch'], 400);
+                }
+
+                // 7. Update order
+                $order->update([
+                    'status' => 'paid',
+                    'paid_at' => now(),
+                ]);
+
+                Log::info("Payment successful for {$reference}");
+
+            }
+        } catch (Exception $e) {
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Something went wrong', 500);
+        }
     }
 }

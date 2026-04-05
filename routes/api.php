@@ -54,5 +54,6 @@ Route::get('get/category/{id}' , [ CommerceHome::class, 'viewSingleCategoryWithP
 Route::post('add-to-cart/{id}' , [ OrderController::class, 'addToCart']);
 Route::get('view-cart' , [ OrderController::class, 'viewCart']);
 //Checkout
-Route::post('checkout' , [ OrderController::class, 'checkout']);
+Route::post('checkout' , [ OrderController::class, 'checkout'])->middleware('auth:sanctum');
+Route::post('checkout-webhook' , [ OrderController::class, 'paystackWebhook']);
 

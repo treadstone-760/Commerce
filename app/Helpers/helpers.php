@@ -25,7 +25,7 @@ if(!function_exists('invoiceNumber')) {
         for ($i = 0; $i < $length; $i++) {
             $randomString .= $characters[rand(0, $charactersLength - 1)];
         }
-        if(Order::where('invoice_numnber' , $randomString)->exists()) {
+        if(Order::where('invoice_number' , $randomString)->exists()) {
             return invoiceNumber($length);
         }
         return $randomString;
