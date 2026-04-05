@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('status');
             $table->integer('address_id')->nullable;
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });
     }

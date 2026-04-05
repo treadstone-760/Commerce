@@ -11,7 +11,8 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
     'sub_total',
     'total_amount',
     'address_id',
-    'user_id'
+    'user_id',
+    'paid_at'
 ])]
 class Order extends Model
 {
