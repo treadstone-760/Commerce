@@ -56,4 +56,5 @@ Route::get('view-cart' , [ OrderController::class, 'viewCart']);
 //Checkout
 Route::post('checkout' , [ OrderController::class, 'checkout'])->middleware('auth:sanctum');
 Route::post('checkout-webhook' , [ OrderController::class, 'paystackWebhook']);
+Route::get('verify-payment/{id}' , [ OrderController::class, 'verifyPayment'])->middleware('auth:sanctum');
 
