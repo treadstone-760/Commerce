@@ -283,13 +283,14 @@ class OrderController extends Controller
             if ($event['event'] === 'charge.success') {
 
                 $reference = $event['data']['reference'];
-                $amount = $event['data']['amount'] / 100; 
+                $amount = $event['data']['amount'] / 100;
 
                 // 4. Find order
                 $order = Order::where('invoice_number', $reference)->first();
 
-                if (!$order) {
+                if (! $order) {
                     Log::error("Order not found: {$reference}");
+
                     return response()->json(['status' => 'order not found'], 404);
                 }
 
@@ -299,8 +300,8 @@ class OrderController extends Controller
                 }
 
                 // 6. Verify amount
-                if ($amount != $order->total_amount ) {
-                    Log::error($amount . ' => ' . $order->total_samount);
+                if ($amount != $order->total_amount) {
+                    Log::error($amount.' => '.$order->total_samount);
                     Log::error("Amount mismatch for {$reference}");
 
                     return response()->json(['status' => 'amount mismatch'], 400);
@@ -315,6 +316,53 @@ class OrderController extends Controller
                 Log::info("Payment successful for {$reference}");
 
             }
+        } catch (Exception $e) {
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Something went wrong', 500);
+        }
+    }
+
+    public function verifyPayment(Request $request, $id)
+    {
+        try {
+            $order = Order::findOrFail($id);
+            $get_reference = $order->invoice_number;
+            if ($order->status == 'paid') {
+                return Res('Order already paid', 400);
+            }
+
+            $payment = new PaymentService;
+            $response = $payment->verifyPayment($get_reference);
+
+            if (! $response->successful()) {
+                Log::error('Paystack verification failed', [
+                    'reference' => $get_reference,
+                    'response' => $response->body(),
+                ]);
+            }
+                $response = $response->json();
+
+                if (! isset($response['data']['status'])) {
+                    return Res('Invalid payment response', 400);
+                }
+
+                if ($response['data']['status'] == 'success') {
+                    $order->update([
+                        'status' => 'paid',
+                        'paid_at' => now(),
+                    ]);
+
+                    return Res('Payment successful', 200);
+                } else {
+                    return Res('Payment not completed', 400);
+                }
+            
+
         } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
