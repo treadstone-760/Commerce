@@ -244,7 +244,7 @@ class OrderController extends Controller
                 'amount' => $order->total_amount * 100,
                 'reference' => $order->invoice_number,
                 'metadata' => [
-                    'type' => 'order', 
+                    'type' => 'order',
                 ],
             ]);
 
@@ -273,7 +273,8 @@ class OrderController extends Controller
             $computed = hash_hmac(
                 'sha512',
                 $request->getContent(),
-                env('Paystack_secret')
+                config('services.paystack.secret'),
+                // env('Paystack_secret')
             );
 
             if (! hash_equals($signature, $computed)) {
@@ -285,10 +286,14 @@ class OrderController extends Controller
             $event = $request->all();
             if ($event['event'] === 'charge.success') {
 
-                $reference = $event['data']['reference'];
-                $amount = $event['data']['amount'] / 100;
+                $reference = $event['data']['reference'] ?? null;
+                $type = $event['data']['metadata']['type'] ?? null;
 
-                // 4. Find order
+                if ($type !== 'order') {
+                    Log::info("Ignoring non-order payment: {$reference}");
+                    return response()->json(['status' => 'ignored'], 200);
+                }
+                $amount = $event['data']['amount'] / 100;
                 $order = Order::where('invoice_number', $reference)->first();
 
                 if (! $order) {
@@ -304,7 +309,7 @@ class OrderController extends Controller
 
                 // 6. Verify amount
                 if ($amount != $order->total_amount) {
-                    Log::error($amount.' => '.$order->total_samount);
+                    Log::error($amount.' => '.$order->total_amount);
                     Log::error("Amount mismatch for {$reference}");
 
                     return response()->json(['status' => 'amount mismatch'], 400);
