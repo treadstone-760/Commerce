@@ -17,9 +17,9 @@ class PaymentService
     protected $secretKey ;
     public function __construct()
     {
-        $this->url = env('Paystack_Url');
-        $this->verify_url = env('Paystack_verify_url' , 'https://api.paystack.co/transaction/verify/');
-        $this->secretKey = env('Paystack_secret');
+        $this->url = config('services.paystack.url');
+        $this->verify_url = config('services.paystack.verify_url');
+        $this->secretKey = config('services.paystack.secret');
     }
 
     public function makePayment($body){
