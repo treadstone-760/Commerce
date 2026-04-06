@@ -243,6 +243,9 @@ class OrderController extends Controller
                 'email' => auth()->user()->email,
                 'amount' => $order->total_amount * 100,
                 'reference' => $order->invoice_number,
+                'metadata' => [
+                    'type' => 'order', 
+                ],
             ]);
 
             DB::commit();
@@ -391,4 +394,7 @@ class OrderController extends Controller
             return Res('Something went wrong', 500);
         }
     }
+
+    // write a payfor order function if checkout fails
+
 }
