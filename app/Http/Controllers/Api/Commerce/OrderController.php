@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use League\Flysystem\UrlGeneration\TemporaryUrlGenerator;
+use Termwind\Components\Ol;
 
 class OrderController extends Controller
 {
@@ -401,5 +403,48 @@ class OrderController extends Controller
     }
 
     // write a payfor order function if checkout fails
+    public function payForOrder(int $id ){
+       try{
 
+        $order = Order::where('id', $id)->first();
+
+        if (! $order) {
+            return Res('Order not found', 404);
+        }
+
+        if ($order->status == 'paid') {
+            return Res('Order already paid', 400);
+        }
+        $reference = invoiceNumber(10);
+        $payment = new PaymentService;
+        $body = [
+            'email' => auth()->user()->email,
+            'amount' => $order->total_amount * 100,
+            'reference' => $reference ,
+            'metadata' => [
+                'type' => 'order',
+            ]
+        ];
+
+        $response = $payment->makePayment($body);
+
+        if (! $response->successful()) {
+            Log::error('Paystack payment failed', [
+                'reference' => $reference,
+                'response' => $response->body(),
+            ]);
+            return Res('Payment failed', 400);       
+        }else{
+             return Res('Successfull', 200, $response->json());
+        }
+
+       }catch(Exception $e){
+        Log::error([
+            'message' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile(),
+        ]);
+
+       }
+    }
 }
