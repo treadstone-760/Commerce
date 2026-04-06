@@ -307,16 +307,25 @@ class OrderController extends Controller
                     return response()->json(['status' => 'amount mismatch'], 400);
                 }
 
+                DB::beginTransaction();
                 // 7. Update order
                 $order->update([
                     'status' => 'paid',
                     'paid_at' => now(),
                 ]);
+                $product_item = OrderItem::where('order_id', $order->id)->get();
+                foreach ($product_item as $item) {
+                    $variant = ProductVariant::findOrFail($item->product_variant_id);
+                    $variant->stock = $variant->stock - $item->quantity;
+                    $variant->save();
+                }
 
+                DB::commit();
                 Log::info("Payment successful for {$reference}");
 
             }
         } catch (Exception $e) {
+            DB::rollBack();
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
@@ -345,25 +354,34 @@ class OrderController extends Controller
                     'response' => $response->body(),
                 ]);
             }
-                $response = $response->json();
+            $response = $response->json();
 
-                if (! isset($response['data']['status'])) {
-                    return Res('Invalid payment response', 400);
+            if (! isset($response['data']['status'])) {
+                return Res('Invalid payment response', 400);
+            }
+
+            if ($response['data']['status'] == 'success') {
+                DB::beginTransaction();
+                $order->update([
+                    'status' => 'paid',
+                    'paid_at' => now(),
+                ]);
+
+                $product_item = OrderItem::where('order_id', $order->id)->get();
+                foreach ($product_item as $item) {
+                    $variant = ProductVariant::findOrFail($item->product_variant_id);
+                    $variant->stock = $variant->stock - $item->quantity;
+                    $variant->save();
                 }
+                DB::commit();
 
-                if ($response['data']['status'] == 'success') {
-                    $order->update([
-                        'status' => 'paid',
-                        'paid_at' => now(),
-                    ]);
-
-                    return Res('Payment successful', 200);
-                } else {
-                    return Res('Payment not completed', 400);
-                }
-            
+                return Res('Payment successful', 200);
+            } else {
+                return Res('Payment not completed', 400);
+            }
 
         } catch (Exception $e) {
+            DB::rollBack();
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
