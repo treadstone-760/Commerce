@@ -19,7 +19,15 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
 
         $this->hideSensitiveRequestDetails();
 
-        $isLocal = $this->app->environment('production');
+        $isLocal = $this->app->environment([
+            'local',
+            'testing',
+            'staging',
+            'development',
+            'dev',
+            'production',
+            'prod'
+        ]);
 
         Telescope::filter(function (IncomingEntry $entry) use ($isLocal) {
             return $isLocal ||
@@ -65,8 +73,15 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
 
         protected function gate(): void
     {
-        Gate::define('viewTelescope', function (User $user) {
-            return true; 
+        Gate::define('viewTelescope', function ($user = null) {
+            if (app()->environment(['local', 'testing', 'staging', 'development', 'dev', 'production', 'prod'])) {
+                return true;
+            }
+
+            return $user && in_array($user->email, [
+                'kboahene760@gmail.com',
+                // Add other authorized emails here
+            ]);
         });
     }
 }
