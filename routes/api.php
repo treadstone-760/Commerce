@@ -60,4 +60,4 @@ Route::post('checkout-webhook' , [ OrderController::class, 'paystackWebhook']);
 Route::get('verify-payment/{id}' , [ OrderController::class, 'verifyPayment'])->middleware('auth:sanctum');
 
 Route::get('my-order' , [ OrderController::class, 'myOrder'])->middleware('auth:sanctum');
-
+Route::get('view-single-order/{id}' , [ OrderController::class, 'viewSingleOrder'])->middleware('auth:sanctum');

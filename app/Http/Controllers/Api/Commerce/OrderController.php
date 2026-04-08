@@ -464,5 +464,19 @@ class OrderController extends Controller
             return Res('Something went wrong', 500);
         }
     }
-    
+
+    public function viewSingleOrder($id){
+        try{
+            $order = Order::with(['orderItems.product' , 'orderItems.productVariant'])->where('id', $id)->first();
+            return Res('Successfull', 200, $order->toArray());
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Something went wrong', 500);
+        }
+    }
+
 }
