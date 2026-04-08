@@ -233,4 +233,18 @@ class AuthService
             return Res('Server Error',500);
         }
     }
+
+    public static function logout(){
+        try{
+            auth()->user()->tokens()->delete();
+            return Res('Logout successful',200);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Server Error',500);
+        }
+    }
 }

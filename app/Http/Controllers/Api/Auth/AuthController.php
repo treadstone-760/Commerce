@@ -74,4 +74,17 @@ class AuthController
             return Res("Server Error",500);
         }
     }
+
+    public function logout(Request $request){
+        try{
+            return AuthService::logout($request);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res("Something went wrong",500);
+        }
+    }
 }

@@ -82,6 +82,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                 'kboahene760@gmail.com',
                 // Add other authorized emails here
             ]);
+            
         });
     }
 }
