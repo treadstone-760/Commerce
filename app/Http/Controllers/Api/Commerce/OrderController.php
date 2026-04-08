@@ -435,8 +435,11 @@ class OrderController extends Controller
             ]);
             return Res('Payment failed', 400);       
         }else{
+
+            //Send an email with the products and price
              return Res('Successfull', 200, $response->json());
         }
+
 
        }catch(Exception $e){
         Log::error([
@@ -447,4 +450,33 @@ class OrderController extends Controller
 
        }
     }
+
+    public function myOrder(){
+        try{
+            $order = Order::with(['orderItems.product' , 'orderItems.productVariant'])->where('user_id', auth()->user()->id)->get();
+            return Res('Successfull', 200, $order->toArray());
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Something went wrong', 500);
+        }
+    }
+
+    public function viewSingleOrder($id){
+        try{
+            $order = Order::with(['orderItems.product' , 'orderItems.productVariant'])->where('id', $id)->first();
+            return Res('Successfull', 200, $order->toArray());
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Something went wrong', 500);
+        }
+    }
+
 }
