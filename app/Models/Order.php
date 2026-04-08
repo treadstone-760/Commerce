@@ -16,5 +16,8 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 ])]
 class Order extends Model
 {
-    //
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 }

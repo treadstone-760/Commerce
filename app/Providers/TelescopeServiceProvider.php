@@ -26,7 +26,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
             'development',
             'dev',
             'production',
-            'prod'
+            'prod',
         ]);
 
         Telescope::filter(function (IncomingEntry $entry) use ($isLocal) {
@@ -71,7 +71,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     //     });
     // }
 
-        protected function gate(): void
+    protected function gate(): void
     {
         Gate::define('viewTelescope', function ($user = null) {
             if (app()->environment(['local', 'testing', 'staging', 'development', 'dev', 'production', 'prod'])) {
@@ -82,7 +82,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                 'kboahene760@gmail.com',
                 // Add other authorized emails here
             ]);
-            
+
         });
     }
 }
