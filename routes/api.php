@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\Products\ProductController;
 use App\Http\Controllers\Api\Commerce\AddressController;
 use App\Http\Controllers\Api\Commerce\CommerceHome;
 use App\Http\Controllers\Api\Commerce\OrderController;
+use App\Http\Controllers\Api\Admin\Dashboard\DashboardController;
 
 
 Route::get('/user', function (Request $request) {
@@ -70,3 +71,6 @@ Route::get('my-address' , [ AddressController::class, 'myAddress'])->middleware(
 Route::get('view-single-address/{id}' , [ AddressController::class, 'viewSingle'])->middleware('auth:sanctum');
 Route::put('update-address/{id}' , [ AddressController::class, 'update'])->middleware('auth:sanctum');
 Route::put('default-address/{id}' , [ AddressController::class, 'defaultAddress'])->middleware('auth:sanctum');
+
+//Dashboard
+Route::get('dashboard' , [ DashboardController::class, 'index'])->middleware('auth:sanctum');
