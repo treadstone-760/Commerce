@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\ShippingAddress;
 use App\Services\PaymentService;
 use Exception;
 use Illuminate\Http\Request;
@@ -217,6 +218,11 @@ class OrderController extends Controller
                 }
                 $total_price += $variant->price * $cart->quantity;
             }
+            //Get users default address
+            $address = ShippingAddress::where('user_id', auth()->id())->where('is_default', true)->first();
+            if (!$address) {
+                return Res('Please add a default address', 400);
+            }
             DB::beginTransaction();
             $order = new Order;
             $order->user_id = auth()->id();
@@ -224,7 +230,7 @@ class OrderController extends Controller
             $order->sub_total = $total_price;
             $order->status = 'pending';
             $order->invoice_number = invoiceNumber(10);
-            $order->address_id = 1;
+            $order->address_id = $address->id;
             $order->save();
             foreach ($carts as $cart) {
                 $order_item = new OrderItem;
