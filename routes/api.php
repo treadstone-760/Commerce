@@ -8,8 +8,10 @@ use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Admin\Products\ProductController;
+use App\Http\Controllers\Api\Commerce\AddressController;
 use App\Http\Controllers\Api\Commerce\CommerceHome;
 use App\Http\Controllers\Api\Commerce\OrderController;
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -61,3 +63,8 @@ Route::get('verify-payment/{id}' , [ OrderController::class, 'verifyPayment'])->
 
 Route::get('my-order' , [ OrderController::class, 'myOrder'])->middleware('auth:sanctum');
 Route::get('view-single-order/{id}' , [ OrderController::class, 'viewSingleOrder'])->middleware('auth:sanctum');
+
+//shipping address
+Route::post('add-address' , [ AddressController::class, 'addAddress'])->middleware('auth:sanctum');
+Route::get('my-address' , [ AddressController::class, 'myAddress'])->middleware('auth:sanctum');
+Route::get('view-single-address/{id}' , [ AddressController::class, 'viewSingle'])->middleware('auth:sanctum');
