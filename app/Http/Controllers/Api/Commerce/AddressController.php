@@ -120,19 +120,27 @@ class AddressController extends Controller
                     'max:50',
                     Rule::unique('shipping_addresses')
                         ->where(fn ($query) => $query->where('user_id', auth()->id()))
-                        ->ignore($id)],
-                'address_line_2' => 'nullable|string',
-                'city' => 'required|string',
-                'landmark' => 'nullable|string',
-                'gps_address' => ['nullable', 'string', 'max:50',
+                        ->ignore(auth()->id(), 'user_id'),
+                ],
+
+                'address_line_2' => ['nullable', 'string'],
+                'city' => ['required', 'string'],
+                'landmark' => ['nullable', 'string'],
+
+                'gps_address' => [
+                    'required',
+                    'string',
+                    'max:50',
                     Rule::unique('shipping_addresses')
                         ->where(fn ($query) => $query->where('user_id', auth()->id()))
-                        ->ignore($id),
-                    'delivery_instructions' => 'nullable|string',
-                    'address_type' => 'required|in:home,office',
-                    'is_default' => 'nullable|boolean',
+                        ->ignore(auth()->id(), 'user_id'),
                 ],
+
+                'delivery_instructions' => ['nullable', 'string'],
+                'address_type' => ['required', 'in:home,office'],
+                'is_default' => ['nullable', 'boolean'],
             ]);
+            // return 234;
 
             if ($validate->fails()) {
                 return Res('Validation Error', 422, $validate->errors()->toArray());
@@ -154,6 +162,30 @@ class AddressController extends Controller
 
             return Res('Successfull', 200, $address->toArray());
         } catch (Exception $e) {
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Something went wrong', 500);
+        }
+    }
+
+    public function defaultAddress(ShippingAddress $id)
+    {
+        try {
+
+            DB::beginTransaction();
+            $address = ShippingAddress::where('user_id', auth()->user()->id)->update(['is_default' => false]);
+
+            $address = $id->update(['is_default' => true]);
+            DB::commit();
+
+            return Res('Address set as default', 200);
+
+        } catch (Exception $e) {
+            DB::rollBack();
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
