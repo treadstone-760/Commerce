@@ -68,3 +68,5 @@ Route::get('view-single-order/{id}' , [ OrderController::class, 'viewSingleOrder
 Route::post('add-address' , [ AddressController::class, 'addAddress'])->middleware('auth:sanctum');
 Route::get('my-address' , [ AddressController::class, 'myAddress'])->middleware('auth:sanctum');
 Route::get('view-single-address/{id}' , [ AddressController::class, 'viewSingle'])->middleware('auth:sanctum');
+Route::put('update-address/{id}' , [ AddressController::class, 'update'])->middleware('auth:sanctum');
+Route::put('default-address/{id}' , [ AddressController::class, 'defaultAddress'])->middleware('auth:sanctum');
