@@ -37,4 +37,8 @@ class User extends Authenticatable
     public function otp(){
         return $this->hasMany(AuthOtp::class);
     }
+
+    public function shippingAddress(){
+        return $this->hasMany(ShippingAddress::class);
+    }
 }
