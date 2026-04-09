@@ -62,4 +62,18 @@ class AddressController extends Controller
             return Res('Something went wrong', 500);
         }
     }
+
+    public function myAddress(){
+        try{
+            $address = ShippingAddress::where('user_id', auth()->user()->id)->get();
+            return Res('Successfull', 200, $address->toArray());
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Something went wrong', 500);
+        }   
+    }
 }
