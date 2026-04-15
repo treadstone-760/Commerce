@@ -33,10 +33,13 @@ class CustomerController extends Controller
     public function viewSingleCustomer($id){
         try{
             $customer = User::with([
-                'order'=>fn($query) => $query->with(['orderItems' => fn($query) => $query->with(['product' , 'productVariant'])])
+                'order'=>fn($query) => $query->with(['orderItems' => fn($query) => $query->with(['product' , 'productVariant']) , "shippingAddress"]),
+               
             ])->where('id' , $id)->first();
 
-
+            if(!$customer){
+                return Res('Customer not found' , 404);
+            }
           return Res("Success" , 200 , $customer->toArray());
            
         }catch(Exception $e){
