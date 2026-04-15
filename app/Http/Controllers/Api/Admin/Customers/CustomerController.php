@@ -100,4 +100,21 @@ class CustomerController extends Controller
             return Res('Something went wrong' , 500);
         }
     }
+
+    public function customerSegmentation()
+    {
+        try{
+            
+
+        }catch(Exception $e){
+            Log::error(
+                [
+                    'message' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                    'file' => $e->getFile(),
+                ]
+            );
+            return Res('Something went wrong' , 500);
+        }
+    }
 }
