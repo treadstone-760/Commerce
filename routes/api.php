@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\Category\CategoryController;
+use App\Http\Controllers\Api\Admin\Customers\CustomerController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\ForgotPassword;
@@ -74,3 +75,8 @@ Route::put('default-address/{id}' , [ AddressController::class, 'defaultAddress'
 
 //Dashboard
 Route::get('dashboard' , [ DashboardController::class, 'index'])->middleware('auth:sanctum');
+
+
+//Admin Customers
+Route::get('view-customers' , [ CustomerController::class, 'viewallCustomer'])->middleware('auth:sanctum');
+Route::get('view-single-customer-details/{id}' , [ CustomerController::class, 'viewSingleCustomer'])->middleware('auth:sanctum');
