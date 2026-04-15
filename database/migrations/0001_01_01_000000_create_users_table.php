@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('phone')->nullable();
             $table->string('status')->default('active');
+            $table->string('segment')->nullable();
             $table->string('user_type')->default('customer');
             $table->rememberToken();
             $table->timestamps();

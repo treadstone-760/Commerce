@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Commerce;
 
 use App\Http\Controllers\Controller;
+use App\Listeners\UpdateCustomerSegment;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -329,6 +330,11 @@ class OrderController extends Controller
                     'status' => 'paid',
                     'paid_at' => now(),
                 ]);
+
+                //update customer segment after payment
+
+                dispatch(new UpdateCustomerSegment($order));
+
                 $product_item = OrderItem::where('order_id', $order->id)->get();
                 foreach ($product_item as $item) {
                     $variant = ProductVariant::findOrFail($item->product_variant_id);
