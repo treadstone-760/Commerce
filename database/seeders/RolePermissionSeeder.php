@@ -15,7 +15,7 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
 
-        $user = User::where('email', 'test@gmail.com')->first();
+        $user = User::where('email', 'kboahene760@gmail.com')->first();
 
         // Create SuperAdmin Role
         $super_admin = Role::firstOrCreate([
@@ -47,6 +47,10 @@ class RolePermissionSeeder extends Seeder
             $super_admin_permission = Permission::firstOrCreate(['name' => 'products.show', 'guard_name' => 'sanctum']);
             $super_admin_permission = Permission::firstOrCreate(['name' => 'products.delete', 'guard_name' => 'sanctum']);
             $super_admin_permission = Permission::firstOrCreate(['name' => 'products.status_update', 'guard_name' => 'sanctum']);
+
+            //Customers
+            $super_admin_permission = Permission::firstOrCreate(['name'=> 'customers.view', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name'=> 'customers.status.update', 'guard_name' => 'sanctum']);
 
             // get all permission of super admin role (just the name)
             $super_admin_permission = Permission::pluck('name')->toArray();

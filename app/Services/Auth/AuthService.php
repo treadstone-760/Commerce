@@ -34,6 +34,10 @@ class AuthService
                 return Res('Unauthorized', 401);
             }
 
+            if ($user->status == "inactive") {
+                return Res('Inactive user ', 401);
+            }
+
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return Res('Login successful', 200, 
