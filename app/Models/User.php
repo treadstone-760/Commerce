@@ -12,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'phone', 'user_type','password'])]
+#[Fillable(['name', 'email', 'phone', 'user_type','status' ,'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -32,7 +32,6 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-
 
     public function otp(){
         return $this->hasMany(AuthOtp::class);
