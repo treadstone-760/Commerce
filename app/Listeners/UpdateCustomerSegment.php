@@ -24,13 +24,13 @@ class UpdateCustomerSegment implements ShouldQueue
      */
     public function handle(OrderPaid $event): void
     {
-        Log::info(["event123" => $event->order]);
+        Log::info(["event123" => $event->order->user_id]);
 
-        $order = Order::where('id', $event->order->id)->first();
+        // $order = Order::where('id', $event->order->id)->first();
 
-        $user = $order->user_id;
+        $user = $event->order->user_id;
         $getUser = User::where('id', $user)->first();
-        $total_amount_spent_by_customer = Order::where('user_id', $user->id)->sum('total_amount');
+        $total_amount_spent_by_customer = Order::where('user_id', $user)->sum('total_amount');
 
         if($total_amount_spent_by_customer > 10000){
             $segment = "platinum";
