@@ -88,3 +88,4 @@ Route::post('create-admin' , [UserManagementController::class , 'store'])->middl
 Route::get('view-admin' , [UserManagementController::class , 'viewAllAdmins'])->middleware('auth:sanctum');
 Route::get('view-admin/{id}' , [UserManagementController::class , 'viewSingleAdmin'])->middleware('auth:sanctum');
 Route::put('update-admin/{id}' , [UserManagementController::class , 'updateAdmin'])->middleware('auth:sanctum');
+Route::put('change-admin-status/{id}' , [UserManagementController::class , 'changeAdminStatus'])->middleware('auth:sanctum');

@@ -130,4 +130,33 @@ class UserManagementController extends Controller
             return Res('Something went wrong', 500);
         }
     }
+
+    public function  changeAdminStatus(Request $request , $id)
+    {
+        try{
+            if(!auth()->user()->can('user.status.update')){
+                return Res('Unauthorized', 401);
+            }
+            $validate = Validator::make(request()->all() , [
+                'status' => 'required|in:active,inactive'
+            ]);
+            if($validate->fails()){
+                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            }
+            $admin = User::where('id' , $id)->where('user_type' , 'admin')->first();
+            if(!$admin){
+                return Res('Admin not found', 404);
+            }
+            $admin->status = request()->status;
+            $admin->save();
+            return Res('Status changed successfully', 200);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Something went wrong', 500);
+        }
+    }
 }
