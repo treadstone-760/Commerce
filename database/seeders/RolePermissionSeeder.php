@@ -52,6 +52,15 @@ class RolePermissionSeeder extends Seeder
             $super_admin_permission = Permission::firstOrCreate(['name'=> 'customers.view', 'guard_name' => 'sanctum']);
             $super_admin_permission = Permission::firstOrCreate(['name'=> 'customers.status.update', 'guard_name' => 'sanctum']);
 
+
+            //User Management
+            $super_admin_permission = Permission::firstOrCreate(['name'=> 'user.view', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name'=> 'user.create', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name'=> 'user.edit', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name'=> 'user.delete', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name'=> 'user.status.update', 'guard_name' => 'sanctum']);
+
+            
             // get all permission of super admin role (just the name)
             $super_admin_permission = Permission::pluck('name')->toArray();
 

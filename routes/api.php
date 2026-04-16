@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\Commerce\AddressController;
 use App\Http\Controllers\Api\Commerce\CommerceHome;
 use App\Http\Controllers\Api\Commerce\OrderController;
 use App\Http\Controllers\Api\Admin\Dashboard\DashboardController;
-
+use App\Http\Controllers\Api\Admin\UserManagement\UserManagementController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -80,3 +80,8 @@ Route::get('dashboard' , [ DashboardController::class, 'index'])->middleware('au
 //Admin Customers
 Route::get('view-customers' , [ CustomerController::class, 'viewallCustomer'])->middleware('auth:sanctum');
 Route::get('view-single-customer-details/{id}' , [ CustomerController::class, 'viewSingleCustomer'])->middleware('auth:sanctum');
+Route::post('change-customer-status/{id}' , [ CustomerController::class, 'changeCustomerStatus'])->middleware('auth:sanctum');
+
+
+//Admin User
+Route::post('create-admin' , [UserManagementController::class , 'store'])->middleware('auth:sanctum');
