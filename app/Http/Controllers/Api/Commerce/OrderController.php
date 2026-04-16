@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Commerce;
 
+use App\Events\OrderPaid;
 use App\Http\Controllers\Controller;
 use App\Listeners\UpdateCustomerSegment;
 use App\Models\Cart;
@@ -333,7 +334,7 @@ class OrderController extends Controller
 
                 //update customer segment after payment
 
-                dispatch(new UpdateCustomerSegment($order));
+                event(new OrderPaid($order));
 
                 $product_item = OrderItem::where('order_id', $order->id)->get();
                 foreach ($product_item as $item) {
