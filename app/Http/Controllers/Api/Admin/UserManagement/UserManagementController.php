@@ -64,13 +64,64 @@ class UserManagementController extends Controller
             if (!auth()->user()->can('user.view')) {
                 return Res('Unauthorized', 401);
             }
-            $admins = User::where('user_type', 'admin')->paginate($per_page);
+            $admins = User::with('roles')->where('user_type', 'admin')->paginate($per_page);
             return response()->json([
                 'status' => 200,
                 'data' => UserResource::collection($admins),
                 'pagination' =>  paginationDetails($admins)
             ], 200);
         } catch (Exception $e) {
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Something went wrong', 500);
+        }
+    }
+
+    public function viewSingleAdmin($id){
+        try{
+            $admin = User::with('roles')->where('id' , $id)->where('user_type' , 'admin')->first();
+            return Res('Successfull', 200, $admin->toArray());
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Something went wrong', 500);
+        }
+    }
+
+    public function updateAdmin($id)
+    {
+        try{
+            if(!auth()->user()->can('user.edit')){
+                return Res('Unauthorized', 401);
+            }
+            $validate = Validator::make(request()->all() , [
+                'name' => 'required|string',
+                'email' => 'required|email|unique:users,email,'.request()->id,
+                'phone' => 'required|unique:users,phone,'.request()->id,
+                "role" => 'required'
+            ]);
+            if($validate->fails()){
+                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            }
+            $role = Role::where('name' , request()->role)->first();
+            $insert = User::find(request()->id);
+
+            $insert->name = request()->name;
+            $insert->email = request()->email;
+            $insert->phone = request()->phone;
+            $insert->user_type = "admin";
+            $insert->save();
+            $insert->syncRoles($role);
+
+            return Res('User Updated Successfully', 200 , $insert->load('roles')->toArray());
+
+        }catch(Exception $e){
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),

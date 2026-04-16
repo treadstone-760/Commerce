@@ -86,3 +86,5 @@ Route::post('change-customer-status/{id}' , [ CustomerController::class, 'change
 //Admin User
 Route::post('create-admin' , [UserManagementController::class , 'store'])->middleware('auth:sanctum');
 Route::get('view-admin' , [UserManagementController::class , 'viewAllAdmins'])->middleware('auth:sanctum');
+Route::get('view-admin/{id}' , [UserManagementController::class , 'viewSingleAdmin'])->middleware('auth:sanctum');
+Route::put('update-admin/{id}' , [UserManagementController::class , 'updateAdmin'])->middleware('auth:sanctum');
