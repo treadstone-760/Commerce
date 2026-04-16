@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class UserManagementController extends Controller
 {
@@ -23,11 +24,13 @@ class UserManagementController extends Controller
                 'phone' => 'required|unique:users,phone',
                 'password' => 'required',
                 'password_confirmation' => 'required|same:password',
+                "role" => 'required'
 
             ]);
             if($validate->fails()){
                 return Res("Validation Error" , 422 , $validate->errors()->toArray());
             }
+             $role = Role::where('name' , $request->role)->first();
             
             $insert = new User();
             $insert->name = $request->name;
@@ -36,6 +39,8 @@ class UserManagementController extends Controller
             $insert->password = Hash::make($request->password);
             $insert->user_type = "admin";
             $insert->save();
+
+            $insert->assignRole($role);
             return Res('User Created Successfully', 200 , $insert->toArray());
 
         }catch(Exception $e){
