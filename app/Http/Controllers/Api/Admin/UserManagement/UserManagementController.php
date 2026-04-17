@@ -171,7 +171,7 @@ class UserManagementController extends Controller
             if($validate->fails()){
                 return Res("Validation Error" , 422 , $validate->errors()->toArray());
             }
-            
+
             $role = Role::create(['name' => $request->name]);
             return Res('Role Created Successfully', 200 , $role->toArray());
         }catch(Exception $e){
@@ -183,4 +183,23 @@ class UserManagementController extends Controller
             return Res('Something went wrong', 500);
         }
     }
+
+    public function viewAllRoles(){
+        try{
+            if(!auth()->user()->can('role.view')){
+                return Res('Unauthorized', 401);
+            }
+            $roles = Role::with('permissions')->get();
+            return Res('Successfull', 200, $roles->toArray());
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Something went wrong', 500);
+        }
+    }
+
+    
 }
