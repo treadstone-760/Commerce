@@ -2,57 +2,58 @@
 
 namespace App\Http\Controllers\Api\Admin\UserManagement;
 
-
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use App\Http\Resources\UserResource;
-
-use League\Uri\Http;
 
 class UserManagementController extends Controller
 {
-    public function store(Request $request){
-        try{
-            if(!auth()->user()->can('user.create')){
+    public function store(Request $request)
+    {
+        try {
+            if (! auth()->user()->can('user.create')) {
                 return Res('Unauthorized', 401);
             }
-            $validate = Validator::make($request->all() , [
+            $validate = Validator::make($request->all(), [
                 'name' => 'required|string',
                 'email' => 'required|email|unique:users,email',
                 'phone' => 'required|unique:users,phone',
                 'password' => 'required',
                 'password_confirmation' => 'required|same:password',
-                "role" => 'required'
+                'role' => 'required',
 
             ]);
-            if($validate->fails()){
-                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            if ($validate->fails()) {
+                return Res('Validation Error', 422, $validate->errors()->toArray());
             }
-             $role = Role::where('name' , $request->role)->first();
-            
-            $insert = new User();
+            $role = Role::where('name', $request->role)->first();
+
+            $insert = new User;
             $insert->name = $request->name;
             $insert->email = $request->email;
             $insert->phone = $request->phone;
             $insert->password = Hash::make($request->password);
-            $insert->user_type = "admin";
+            $insert->user_type = 'admin';
             $insert->save();
 
             $insert->assignRole($role);
-            return Res('User Created Successfully', 200 , $insert->toArray());
 
-        }catch(Exception $e){
+            return Res('User Created Successfully', 200, $insert->toArray());
+
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+
             return Res('Something went wrong', 500);
         }
     }
@@ -61,14 +62,15 @@ class UserManagementController extends Controller
     {
         try {
             $per_page = request()->per_page ?? 10;
-            if (!auth()->user()->can('user.view')) {
+            if (! auth()->user()->can('user.view')) {
                 return Res('Unauthorized', 401);
             }
             $admins = User::with('roles')->where('user_type', 'admin')->paginate($per_page);
+
             return response()->json([
                 'status' => 200,
                 'data' => UserResource::collection($admins),
-                'pagination' =>  paginationDetails($admins)
+                'pagination' => paginationDetails($admins),
             ], 200);
         } catch (Exception $e) {
             Log::error([
@@ -76,130 +78,203 @@ class UserManagementController extends Controller
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+
             return Res('Something went wrong', 500);
         }
     }
 
-    public function viewSingleAdmin($id){
-        try{
-            $admin = User::with('roles')->where('id' , $id)->where('user_type' , 'admin')->first();
+    public function viewSingleAdmin($id)
+    {
+        try {
+            $admin = User::with('roles')->where('id', $id)->where('user_type', 'admin')->first();
+
             return Res('Successfull', 200, $admin->toArray());
-        }catch(Exception $e){
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+
             return Res('Something went wrong', 500);
         }
     }
 
     public function updateAdmin($id)
     {
-        try{
-            if(!auth()->user()->can('user.edit')){
+        try {
+            if (! auth()->user()->can('user.edit')) {
                 return Res('Unauthorized', 401);
             }
-            $validate = Validator::make(request()->all() , [
+            $validate = Validator::make(request()->all(), [
                 'name' => 'required|string',
                 'email' => 'required|email|unique:users,email,'.request()->id,
                 'phone' => 'required|unique:users,phone,'.request()->id,
-                "role" => 'required'
+                'role' => 'required',
             ]);
-            if($validate->fails()){
-                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            if ($validate->fails()) {
+                return Res('Validation Error', 422, $validate->errors()->toArray());
             }
-            $role = Role::where('name' , request()->role)->first();
+            $role = Role::where('name', request()->role)->first();
             $insert = User::find(request()->id);
 
             $insert->name = request()->name;
             $insert->email = request()->email;
             $insert->phone = request()->phone;
-            $insert->user_type = "admin";
+            $insert->user_type = 'admin';
             $insert->save();
             $insert->syncRoles($role);
 
-            return Res('User Updated Successfully', 200 , $insert->load('roles')->toArray());
+            return Res('User Updated Successfully', 200, $insert->load('roles')->toArray());
 
-        }catch(Exception $e){
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+
             return Res('Something went wrong', 500);
         }
     }
 
-    public function  changeAdminStatus(Request $request , $id)
+    public function changeAdminStatus(Request $request, $id)
     {
-        try{
-            if(!auth()->user()->can('user.status.update')){
+        try {
+            if (! auth()->user()->can('user.status.update')) {
                 return Res('Unauthorized', 401);
             }
-            $validate = Validator::make(request()->all() , [
-                'status' => 'required|in:active,inactive'
+            $validate = Validator::make(request()->all(), [
+                'status' => 'required|in:active,inactive',
             ]);
-            if($validate->fails()){
-                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            if ($validate->fails()) {
+                return Res('Validation Error', 422, $validate->errors()->toArray());
             }
-            $admin = User::where('id' , $id)->where('user_type' , 'admin')->first();
-            if(!$admin){
+            $admin = User::where('id', $id)->where('user_type', 'admin')->first();
+            if (! $admin) {
                 return Res('Admin not found', 404);
             }
             $admin->status = request()->status;
             $admin->save();
+
             return Res('Status changed successfully', 200);
-        }catch(Exception $e){
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+
             return Res('Something went wrong', 500);
         }
     }
 
-    public function createNewRole(Request $request){
-        try{
-            if(!auth()->user()->can('role.create')){
+    public function createNewRole(Request $request)
+    {
+        try {
+            if (! auth()->user()->can('role.create')) {
                 return Res('Unauthorized', 401);
             }
-            $validate = Validator::make($request->all() , [
-                'name' => 'required|string|unique:roles,name'
+            $validate = Validator::make($request->all(), [
+                'name' => 'required|string|unique:roles,name',
             ]);
-            if($validate->fails()){
-                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            if ($validate->fails()) {
+                return Res('Validation Error', 422, $validate->errors()->toArray());
             }
 
             $role = Role::create(['name' => $request->name]);
-            return Res('Role Created Successfully', 200 , $role->toArray());
-        }catch(Exception $e){
+
+            return Res('Role Created Successfully', 200, $role->toArray());
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+
             return Res('Something went wrong', 500);
         }
     }
 
-    public function viewAllRoles(){
-        try{
-            if(!auth()->user()->can('role.view')){
+    public function viewAllRoles()
+    {
+        try {
+            if (! auth()->user()->can('role.view')) {
                 return Res('Unauthorized', 401);
             }
             $roles = Role::with('permissions')->get();
+
             return Res('Successfull', 200, $roles->toArray());
-        }catch(Exception $e){
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+
             return Res('Something went wrong', 500);
         }
     }
 
-    
+    public function viewSingleRole($id)
+    {
+        try {
+            $role = Role::with('permissions')->where('id', $id)->first();
+
+            return Res('Successfull', 200, $role->toArray());
+        } catch (Exception $e) {
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Something went wrong', 500);
+        }
+    }
+
+    public function viewAllPermissions()
+    {
+        try {
+            $permissions = Permission::all();
+
+            return Res('Successfull', 200, $permissions->toArray());
+        } catch (Exception $e) {
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Something went wrong', 500);
+        }
+    }
+
+
+    public function assignPermissionToRole(Request $request, $id)
+    {
+        try {
+            $validate = Validator::make(request()->all(), [
+                'permissions' => 'required|array',
+            ]);
+            if ($validate->fails()) {
+                return Res('Validation Error', 422, $validate->errors()->toArray());
+            }
+            $role = Role::find($id);
+            if(!$role){
+                return Res('Role not found', 404);
+            }
+            $role->syncPermissions($request->permissions);
+
+            return Res('Permissions assigned successfully', 200);
+        } catch (Exception $e) {
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Something went wrong', 500);
+        }
+    }
 }

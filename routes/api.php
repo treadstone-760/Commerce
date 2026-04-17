@@ -93,3 +93,9 @@ Route::put('change-admin-status/{id}' , [UserManagementController::class , 'chan
 //Role Permission
 Route::post('create-role' , [UserManagementController::class , 'createNewRole'])->middleware('auth:sanctum' , 'active');
 Route::get('view-role' , [UserManagementController::class , 'viewAllRoles'])->middleware('auth:sanctum' , 'active');
+Route::get('get/role/{id}' , [UserManagementController::class , 'viewSingleRole'])->middleware('auth:sanctum' , 'active');
+
+//Permission
+Route::get('view-permission' , [UserManagementController::class , 'viewAllPermissions'])->middleware('auth:sanctum' , 'active');
+// Route::post('create-permission' , [UserManagementController::class , 'createNewPermission'])->middleware('auth:sanctum' , 'active');
+Route::post('assign-permission-to-role/{id}' , [UserManagementController::class , 'assignPermissionToRole'])->middleware('auth:sanctum' , 'active');
