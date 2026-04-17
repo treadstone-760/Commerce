@@ -82,10 +82,10 @@ Route::get('view-customers' , [ CustomerController::class, 'viewallCustomer'])->
 Route::get('view-single-customer-details/{id}' , [ CustomerController::class, 'viewSingleCustomer'])->middleware('auth:sanctum');
 Route::post('change-customer-status/{id}' , [ CustomerController::class, 'changeCustomerStatus'])->middleware('auth:sanctum');
 
-
+           
 //Admin User
 Route::post('create-admin' , [UserManagementController::class , 'store'])->middleware('auth:sanctum');
-Route::get('view-admin' , [UserManagementController::class , 'viewAllAdmins'])->middleware('auth:sanctum');
-Route::get('view-admin/{id}' , [UserManagementController::class , 'viewSingleAdmin'])->middleware('auth:sanctum');
+Route::get('view-admin' , [UserManagementController::class , 'viewAllAdmins'])->middleware(['auth:sanctum' , 'active']);
+Route::get('view-admin/{id}' , [UserManagementController::class , 'viewSingleAdmin'])->middleware('auth:sanctum' , 'active');
 Route::put('update-admin/{id}' , [UserManagementController::class , 'updateAdmin'])->middleware('auth:sanctum');
 Route::put('change-admin-status/{id}' , [UserManagementController::class , 'changeAdminStatus'])->middleware('auth:sanctum');
