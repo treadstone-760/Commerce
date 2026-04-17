@@ -277,4 +277,29 @@ class UserManagementController extends Controller
             return Res('Something went wrong', 500);
         }
     }
+
+    public function deleteRole($id)
+    {
+        try {
+            if (! auth()->user()->can('role.delete')) {
+                return Res('Unauthorized', 401);
+            }
+            $role = Role::find($id);
+            if (! $role) {
+                return Res('Role not found', 404);
+            }
+            $role->syncPermissions([]);
+            $role->delete(); 
+            
+            return Res('Role deleted successfully', 200);
+        } catch (Exception $e) {
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Something went wrong', 500);
+        }
+    }
 }

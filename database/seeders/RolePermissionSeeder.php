@@ -64,6 +64,7 @@ class RolePermissionSeeder extends Seeder
             //Settings
             $super_admin_permission = Permission::firstOrCreate(['name'=> 'role.create', 'guard_name' => 'sanctum']);
             $super_admin_permission = Permission::firstOrCreate(['name'=> 'role.view', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name'=> 'role.delete', 'guard_name' => 'sanctum']);
 
             
             // get all permission of super admin role (just the name)
