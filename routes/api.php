@@ -59,33 +59,33 @@ Route::get('get/category/{id}' , [ CommerceHome::class, 'viewSingleCategoryWithP
 Route::post('add-to-cart/{id}' , [ OrderController::class, 'addToCart']);
 Route::get('view-cart' , [ OrderController::class, 'viewCart']);
 //Checkout
-Route::post('checkout' , [ OrderController::class, 'checkout'])->middleware('auth:sanctum');
+Route::post('checkout' , [ OrderController::class, 'checkout'])->middleware('auth:sanctum' , 'active');
 Route::post('checkout-webhook' , [ OrderController::class, 'paystackWebhook']);
 Route::get('verify-payment/{id}' , [ OrderController::class, 'verifyPayment'])->middleware('auth:sanctum');
 
-Route::get('my-order' , [ OrderController::class, 'myOrder'])->middleware('auth:sanctum');
-Route::get('view-single-order/{id}' , [ OrderController::class, 'viewSingleOrder'])->middleware('auth:sanctum');
+Route::get('my-order' , [ OrderController::class, 'myOrder'])->middleware('auth:sanctum' , 'active');
+Route::get('view-single-order/{id}' , [ OrderController::class, 'viewSingleOrder'])->middleware('auth:sanctum' , 'active');
 
 //shipping address
-Route::post('add-address' , [ AddressController::class, 'addAddress'])->middleware('auth:sanctum');
-Route::get('my-address' , [ AddressController::class, 'myAddress'])->middleware('auth:sanctum');
-Route::get('view-single-address/{id}' , [ AddressController::class, 'viewSingle'])->middleware('auth:sanctum');
-Route::put('update-address/{id}' , [ AddressController::class, 'update'])->middleware('auth:sanctum');
-Route::put('default-address/{id}' , [ AddressController::class, 'defaultAddress'])->middleware('auth:sanctum');
+Route::post('add-address' , [ AddressController::class, 'addAddress'])->middleware('auth:sanctum' , 'active');
+Route::get('my-address' , [ AddressController::class, 'myAddress'])->middleware('auth:sanctum' , 'active');
+Route::get('view-single-address/{id}' , [ AddressController::class, 'viewSingle'])->middleware('auth:sanctum' , 'active');
+Route::put('update-address/{id}' , [ AddressController::class, 'update'])->middleware('auth:sanctum' , 'active');
+Route::put('default-address/{id}' , [ AddressController::class, 'defaultAddress'])->middleware('auth:sanctum' , 'active');
 
 //Dashboard
-Route::get('dashboard' , [ DashboardController::class, 'index'])->middleware('auth:sanctum');
+Route::get('dashboard' , [ DashboardController::class, 'index'])->middleware('auth:sanctum' , 'active');
 
 
 //Admin Customers
-Route::get('view-customers' , [ CustomerController::class, 'viewallCustomer'])->middleware('auth:sanctum');
-Route::get('view-single-customer-details/{id}' , [ CustomerController::class, 'viewSingleCustomer'])->middleware('auth:sanctum');
-Route::post('change-customer-status/{id}' , [ CustomerController::class, 'changeCustomerStatus'])->middleware('auth:sanctum');
+Route::get('view-customers' , [ CustomerController::class, 'viewallCustomer'])->middleware('auth:sanctum' , 'active');
+Route::get('view-single-customer-details/{id}' , [ CustomerController::class, 'viewSingleCustomer'])->middleware('auth:sanctum' , 'active');
+Route::post('change-customer-status/{id}' , [ CustomerController::class, 'changeCustomerStatus'])->middleware('auth:sanctum' , 'active');
 
            
 //Admin User
-Route::post('create-admin' , [UserManagementController::class , 'store'])->middleware('auth:sanctum');
+Route::post('create-admin' , [UserManagementController::class , 'store'])->middleware('auth:sanctum' , 'active');
 Route::get('view-admin' , [UserManagementController::class , 'viewAllAdmins'])->middleware(['auth:sanctum' , 'active']);
 Route::get('view-admin/{id}' , [UserManagementController::class , 'viewSingleAdmin'])->middleware('auth:sanctum' , 'active');
-Route::put('update-admin/{id}' , [UserManagementController::class , 'updateAdmin'])->middleware('auth:sanctum');
-Route::put('change-admin-status/{id}' , [UserManagementController::class , 'changeAdminStatus'])->middleware('auth:sanctum');
+Route::put('update-admin/{id}' , [UserManagementController::class , 'updateAdmin'])->middleware('auth:sanctum' , 'active');
+Route::put('change-admin-status/{id}' , [UserManagementController::class , 'changeAdminStatus'])->middleware('auth:sanctum' , 'active');
