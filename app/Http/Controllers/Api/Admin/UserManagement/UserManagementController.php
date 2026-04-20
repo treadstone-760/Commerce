@@ -44,6 +44,10 @@ class UserManagementController extends Controller
             $insert->save();
 
             $insert->assignRole($role);
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($insert)
+                ->log('Admin Creation');
 
             return Res('User Created Successfully', 200, $insert->toArray());
 
@@ -124,6 +128,12 @@ class UserManagementController extends Controller
             $insert->user_type = 'admin';
             $insert->save();
             $insert->syncRoles($role);
+
+            $insert->assignRole($role);
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($insert)
+                ->log('Admin Update');
 
             return Res('User Updated Successfully', 200, $insert->load('roles')->toArray());
 
@@ -250,7 +260,6 @@ class UserManagementController extends Controller
         }
     }
 
-
     public function assignPermissionToRole(Request $request, $id)
     {
         try {
@@ -261,7 +270,7 @@ class UserManagementController extends Controller
                 return Res('Validation Error', 422, $validate->errors()->toArray());
             }
             $role = Role::find($id);
-            if(!$role){
+            if (! $role) {
                 return Res('Role not found', 404);
             }
             $role->syncPermissions($request->permissions);
@@ -289,8 +298,8 @@ class UserManagementController extends Controller
                 return Res('Role not found', 404);
             }
             $role->syncPermissions([]);
-            $role->delete(); 
-            
+            $role->delete();
+
             return Res('Role deleted successfully', 200);
         } catch (Exception $e) {
             Log::error([
