@@ -167,6 +167,12 @@ class UserManagementController extends Controller
             $admin->status = request()->status;
             $admin->save();
 
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($admin)
+                ->log('Admin Status change');
+        
+
             return Res('Status changed successfully', 200);
         } catch (Exception $e) {
             Log::error([
@@ -194,6 +200,11 @@ class UserManagementController extends Controller
 
             $role = Role::create(['name' => $request->name]);
 
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($role)
+                ->log('New Role Created');
+
             return Res('Role Created Successfully', 200, $role->toArray());
         } catch (Exception $e) {
             Log::error([
@@ -202,6 +213,43 @@ class UserManagementController extends Controller
                 'file' => $e->getFile(),
             ]);
 
+            return Res('Something went wrong', 500);
+        }
+    }
+
+
+    public function updateRole(Request $request, $id)
+    {
+        try{
+            if (! auth()->user()->can('role.edit')) {
+                return Res('Unauthorized', 401);
+            }
+            $validate = Validator::make(request()->all(), [
+                'name' => 'required|string|unique:roles,name,'.$id,
+            ]);
+            if ($validate->fails()) {
+                return Res('Validation Error', 422, $validate->errors()->toArray());
+            }
+            $role = Role::find($id);
+            if (! $role) {
+                return Res('Role not found', 404);
+            }
+            $role->name = request()->name;
+            $role->save();
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($role)
+                ->log('Role Updated');
+
+            return Res('Role Updated Successfully', 200, $role->toArray());
+
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
             return Res('Something went wrong', 500);
         }
     }
