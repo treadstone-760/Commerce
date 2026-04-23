@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Commerce\CommerceHome;
 use App\Http\Controllers\Api\Commerce\OrderController;
 use App\Http\Controllers\Api\Admin\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Admin\UserManagement\UserManagementController;
+use App\Http\Controllers\Api\Admin\Reports\ReportController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -100,3 +101,6 @@ Route::put('update-role/{id}' , [UserManagementController::class , 'updateRole']
 Route::get('view-permission' , [UserManagementController::class , 'viewAllPermissions'])->middleware('auth:sanctum' , 'active');
 // Route::post('create-permission' , [UserManagementController::class , 'createNewPermission'])->middleware('auth:sanctum' , 'active');
 Route::post('assign-permission-to-role/{id}' , [UserManagementController::class , 'assignPermissionToRole'])->middleware('auth:sanctum' , 'active');
+
+
+Route::get('reports/get-revenue' , [ReportController::class , 'salesReport'])->middleware('auth:sanctum' , 'active');

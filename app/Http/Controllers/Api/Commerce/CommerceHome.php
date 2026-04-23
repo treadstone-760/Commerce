@@ -78,7 +78,7 @@ class CommerceHome extends Controller
             $paginate = request('paginate', 10);
         // Get all categories 💼
             $categories = Category::with(['children', 'products'])
-                ->withCount(['children', 'products'])
+                ->withCount(['children', 'product'])
                 ->where('is_active', 1)
                 ->paginate($paginate);
 
