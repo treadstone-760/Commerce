@@ -109,7 +109,6 @@ class CommerceHome extends Controller
                 'category' => $category
             ]);
         }catch(Exception $e){
-
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
