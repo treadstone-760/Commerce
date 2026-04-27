@@ -43,7 +43,8 @@ class AuthService
             return Res('Login successful', 200, 
             ['token' => $token ,
             'redirect' => $user->user_type == "customer"? "customer" : "admin",
-             "user" => $user]);
+             "user" => $user
+             ]);
 
         } catch (Exception $e) {
             Log::error([
@@ -118,7 +119,7 @@ class AuthService
             }
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            return Res('Login successful', 200, ['token' => $token]);
+            return Res('Login successful', 200, ['token' => $token , 'user' => $user , 'redirect' => "customer"]);
         } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
