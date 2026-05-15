@@ -46,6 +46,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Allowed Hosts (non-local access)
+    |--------------------------------------------------------------------------
+    |
+    | Hostnames permitted to access Telescope without a web session. Use bare
+    | hostnames (commerce-api.example.com) or wildcards (*.ngrok-free.dev).
+    | Comma-separated in TELESCOPE_ALLOWED_HOSTS.
+    |
+    */
+
+    'allowed_hosts' => array_values(array_filter(array_map(
+        trim(...),
+        explode(',', (string) env(
+            'TELESCOPE_ALLOWED_HOSTS',
+            'commerce-api.nnrvhis.com,*.ngrok-free.dev,*.ngrok-free.app,*.ngrok.io'
+        ))
+    ))),
+
+    /*
+    |--------------------------------------------------------------------------
     | Telescope Storage Driver
     |--------------------------------------------------------------------------
     |
