@@ -31,7 +31,7 @@ class AuthService
             $user = User::where('email', $credentials['email'])->first();
 
             if (! $user || ! Hash::check($credentials['password'], $user->password)) {
-                return Res('Unauthorized', 401);
+                return Res('Invalid credentials', 401);
             }
 
             if ($user->status == "inactive") {
