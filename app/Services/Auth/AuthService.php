@@ -6,11 +6,14 @@ use App\Jobs\SendSmsJob;
 use App\Mail\ForgetPassword;
 use App\Models\PasswordReset;
 use App\Models\User;
+use App\Models\UserVerificationOtp;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use App\Mail\SendOptVerification;
 
 class AuthService
 {
@@ -244,6 +247,62 @@ class AuthService
             return Res('Server Error',500);
         }
     }
+
+    public static function resendEmailVerification($request){
+        try{
+            DB::beginTransaction();
+            $user = User::where('email', $request->email)->first();
+
+            if (! $user) {
+                DB::rollBack();
+                return Res('User not found', 404);
+            }
+            //check if last token created is less than 3 minutes ago
+            $last_token = UserVerificationOtp::where('user_id' , $user->id)
+                            ->where('type' , 'email_verification_otp')
+                            ->where('verified_at', null)
+                            ->where('expired_at', '>', now()->subMinutes(3))
+                            ->first();
+            if($last_token){
+                DB::rollBack();
+                return Res('Please wait 3 minutes before resending', 400);
+            }
+
+            //expire old otps
+            $old_tokens = UserVerificationOtp::where('user_id' , $user->id)
+                            ->where('type' , 'email_verification_otp')
+                            ->where('verified_at', null)
+                            ->update([
+                                'is_verified' => false,
+                                'verified_at' => now(),
+                                'expired_at' => now(),
+                            ]);
+            //create a new otp 
+            $otp = rand(100000, 999999);
+            $createOtp = UserVerificationOtp::create([
+                'otp' => Hash::make($otp),
+                'type' => 'email_verification_otp',
+                'user_id' => $user->id,
+                'expired_at' => now()->addMinutes(10),
+            ]);
+            DB::commit();
+            Mail::to($user->email)->queue(new SendOptVerification($otp));
+            return Res('Verification code sent successfully', 200);
+                         
+
+
+        }catch(Exception $e){
+            DB::rollBack();
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Server Error',500);
+        }
+    }
+
+    
 
     public static function logout(){
         try{

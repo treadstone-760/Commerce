@@ -38,7 +38,7 @@ class RegisterService
                 'user_id' => $user->id,
                 'otp' => Hash::make($rand),
                 'type' => 'email_verification_otp',
-                'expired_at' => now()->addMinutes(5)
+                'expired_at' => now()->addMinutes(10)
             ]);
 
             DB::commit();
