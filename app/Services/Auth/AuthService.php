@@ -4,16 +4,16 @@ namespace App\Services\Auth;
 
 use App\Jobs\SendSmsJob;
 use App\Mail\ForgetPassword;
+use App\Mail\SendOptVerification;
 use App\Models\PasswordReset;
 use App\Models\User;
 use App\Models\UserVerificationOtp;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
-use App\Mail\SendOptVerification;
 
 class AuthService
 {
@@ -33,27 +33,25 @@ class AuthService
 
             $user = User::where('email', $credentials['email'])->first();
 
-
-
             if (! $user || ! Hash::check($credentials['password'], $user->password)) {
                 return Res('Invalid credentials', 401);
             }
 
-            if($user->email_verified_at == null){
+            if ($user->email_verified_at == null) {
                 return Res('Email is not verified', 400);
             }
 
-            if ($user->status == "inactive") {
+            if ($user->status == 'inactive') {
                 return Res('Inactive user ', 401);
             }
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            return Res('Login successful', 200, 
-            ['token' => $token ,
-            'redirect' => $user->user_type == "customer"? "customer" : "admin",
-             "user" => $user
-             ]);
+            return Res('Login successful', 200,
+                ['token' => $token,
+                    'redirect' => $user->user_type == 'customer' ? 'customer' : 'admin',
+                    'user' => $user,
+                ]);
 
         } catch (Exception $e) {
             Log::error([
@@ -128,7 +126,7 @@ class AuthService
             }
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            return Res('Login successful', 200, ['token' => $token , 'user' => $user , 'redirect' => "customer"]);
+            return Res('Login successful', 200, ['token' => $token, 'user' => $user, 'redirect' => 'customer']);
         } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
@@ -175,9 +173,8 @@ class AuthService
         try {
             $confirm_otp = PasswordReset::where('email', $request->email)->where('expires_at', '>', now())->first();
 
-
             if (! $confirm_otp) {
-               return Res('Invalid OTP', 400);
+                return Res('Invalid OTP', 400);
             }
 
             // ✅ Check against reset_token (not token)
@@ -193,13 +190,14 @@ class AuthService
                 $newToken = Str::uuid()->toString();
 
                 $confirm_otp->update([
-                    'reset_token' => $newToken, 
+                    'reset_token' => $newToken,
                     'reset_token_expires_at' => now()->addMinutes(5),
-                    "expires_at"=> now()
+                    'expires_at' => now(),
                 ]);
 
                 return Res('Password reset successful', 200, ['reset_tokens' => $newToken]);
             }
+
             return Res('Invalid OTP', 400);
 
         } catch (Exception $e) {
@@ -212,20 +210,18 @@ class AuthService
             return Res('Server Error', 500);
         }
     }
-    
+
     public static function resetPassword($request)
     {
         try {
 
             $getResetToken = PasswordReset::where('reset_token', $request->reset_token)->where('reset_token_expires_at', '>', now())->first();
 
-
             if (! $getResetToken) {
                 return Res('Invalid reset token / Expired', 400);
             }
 
             $user = User::where('email', $getResetToken->email)->first();
-
 
             if (! $user) {
                 return Res('User not found', 404);
@@ -237,47 +233,54 @@ class AuthService
             $getResetToken->delete();
 
             return Res('Password reset successful', 200);
-        }catch(Exception $e){
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
-    
-            return Res('Server Error',500);
+
+            return Res('Server Error', 500);
         }
     }
 
-    public static function resendEmailVerification($request){
-        try{
+    public static function resendEmailVerification($request)
+    {
+        try {
             DB::beginTransaction();
             $user = User::where('email', $request->email)->first();
 
             if (! $user) {
                 DB::rollBack();
+
                 return Res('User not found', 404);
             }
-            //check if last token created is less than 3 minutes ago
-            $last_token = UserVerificationOtp::where('user_id' , $user->id)
-                            ->where('type' , 'email_verification_otp')
-                            ->where('verified_at', null)
-                            ->where('expired_at', '>', now()->subMinutes(3))
-                            ->first();
-            if($last_token){
+            // check if last token created is less than 3 minutes ago
+            $last_token = UserVerificationOtp::where('user_id', $user->id)
+                ->where('type', 'email_verification_otp')
+                ->whereNull('verified_at')
+                ->latest()
+                ->first();
+
+            if (
+                $last_token &&
+                $last_token->created_at->gt(now()->subMinutes(3))
+            ) {
                 DB::rollBack();
-                return Res('Please wait 3 minutes before resending', 400);
+
+                return Res('Please wait 3 minutes before resending' , 400);
             }
 
-            //expire old otps
-            $old_tokens = UserVerificationOtp::where('user_id' , $user->id)
-                            ->where('type' , 'email_verification_otp')
-                            ->where('verified_at', null)
-                            ->update([
-                                'is_verified' => false,
-                                'verified_at' => now(),
-                                'expired_at' => now(),
-                            ]);
-            //create a new otp 
+            // expire old otps
+            $old_tokens = UserVerificationOtp::where('user_id', $user->id)
+                ->where('type', 'email_verification_otp')
+                ->where('verified_at', null)
+                ->update([
+                    'is_verified' => false,
+                    'verified_at' => now(),
+                    'expired_at' => now(),
+                ]);
+            // create a new otp
             $otp = rand(100000, 999999);
             $createOtp = UserVerificationOtp::create([
                 'otp' => Hash::make($otp),
@@ -287,34 +290,35 @@ class AuthService
             ]);
             DB::commit();
             Mail::to($user->email)->queue(new SendOptVerification($otp));
+
             return Res('Verification code sent successfully', 200);
-                         
 
-
-        }catch(Exception $e){
+        } catch (Exception $e) {
             DB::rollBack();
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
-            return Res('Server Error',500);
+
+            return Res('Server Error', 500);
         }
     }
 
-    
-
-    public static function logout(){
-        try{
+    public static function logout()
+    {
+        try {
             auth()->user()->tokens()->delete();
-            return Res('Logout successful',200);
-        }catch(Exception $e){
+
+            return Res('Logout successful', 200);
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
-            return Res('Server Error',500);
+
+            return Res('Server Error', 500);
         }
     }
 }
