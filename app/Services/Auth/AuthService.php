@@ -30,8 +30,14 @@ class AuthService
 
             $user = User::where('email', $credentials['email'])->first();
 
+
+
             if (! $user || ! Hash::check($credentials['password'], $user->password)) {
                 return Res('Invalid credentials', 401);
+            }
+
+            if($user->email_verified_at == null){
+                return Res('Email is not verified', 400);
             }
 
             if ($user->status == "inactive") {

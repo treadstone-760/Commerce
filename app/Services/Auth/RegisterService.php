@@ -25,6 +25,9 @@ class RegisterService
                 'phone' => $request->phone,
                 'password' => Hash::make($request->password),
             ]);
+
+            // lets send a verification otp
+            
             
             return Res('Registration successful', 200, $user->toArray());
         }catch(Exception $e){
