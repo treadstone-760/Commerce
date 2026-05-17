@@ -38,7 +38,30 @@ class AuthService
             }
 
             if ($user->email_verified_at == null) {
+
+                // send email verification otp
+
+                $old_tokens = UserVerificationOtp::where('user_id', $user->id)
+                    ->where('type', 'email_verification_otp')
+                    ->where('verified_at', null)
+                    ->update([
+                        'is_verified' => false,
+                        'verified_at' => now(),
+                        'expired_at' => now(),
+                    ]);
+                // create a new otp
+                $otp = rand(100000, 999999);
+                $createOtp = UserVerificationOtp::create([
+                    'otp' => Hash::make($otp),
+                    'type' => 'email_verification_otp',
+                    'user_id' => $user->id,
+                    'expired_at' => now()->addMinutes(10),
+                ]);
+
+                Mail::to($user->email)->queue(new SendOptVerification($otp));
+
                 return Res('Email is not verified', 400);
+
             }
 
             if ($user->status == 'inactive') {
@@ -268,7 +291,7 @@ class AuthService
             ) {
                 DB::rollBack();
 
-                return Res('Please wait 3 minutes before resending' , 400);
+                return Res('Please wait 3 minutes before resending', 400);
             }
 
             // expire old otps
@@ -311,6 +334,44 @@ class AuthService
             auth()->user()->tokens()->delete();
 
             return Res('Logout successful', 200);
+        } catch (Exception $e) {
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Server Error', 500);
+        }
+    }
+
+    public static function confirmEmailVerification($request)
+    {
+        try {
+            $user = User::where('email', $request->email)->first();
+
+            if (! $user) {
+                return Res('User not found', 404);
+            }
+            $verification = UserVerificationOtp::where('user_id', $user->id)
+                ->where('type', 'email_verification_otp')->where('is_verified', false)
+                ->where('verified_at', null)->first();
+
+            // check if otp is expired
+            if ($verification->expired_at < now()) {
+                return Res('OTP has expired', 400);
+            }
+
+            if (Hash::check($request->token, $verification->otp)) {
+                $verification->update([
+                    'is_verified' => true,
+                    'verified_at' => now(),
+                ]);
+
+                return Res('Email verified successfully', 200);
+            }
+
+            return Res('Invalid OTP', 400);
         } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),

@@ -22,7 +22,9 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'registerUser']); 
-Route::post('resend-otp', [AuthController::class, 'resentEmailVerification']);
+Route::post('resend/verification/otp', [AuthController::class, 'resentEmailVerification']);
+Route::post('verify/email', [AuthController::class, 'ConfirmEmailVerification']);
+//verify otp for mobile
 Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('forgot-password', [ForgotPassword::class, 'sendResetOtp']);
 Route::post('verify-reset-password', [ForgotPassword::class, 'verifyResetPassword']);

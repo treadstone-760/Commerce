@@ -95,6 +95,27 @@ class AuthController
         }
     }
 
+    public function ConfirmEmailVerification(Request $request){
+        try{
+            $validate = Validator::make($request->all() , [
+                'email' => 'required|email|exists:users,email',
+                'token' => 'required',
+            ]);
+
+            if($validate->fails()){
+                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            }
+            return AuthService::confirmEmailVerification($request);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res("Something went wrong",500);
+        }
+    }
+
     public function logout(Request $request){
         try{
             return AuthService::logout($request);
