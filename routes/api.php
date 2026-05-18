@@ -26,6 +26,8 @@ Route::post('resend/verification/otp', [AuthController::class, 'resentEmailVerif
 Route::post('verify/email', [AuthController::class, 'ConfirmEmailVerification']);
 //verify otp for mobile
 Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
+
+
 Route::post('forgot-password', [ForgotPassword::class, 'sendResetOtp']);
 Route::post('verify-reset-password', [ForgotPassword::class, 'verifyResetPassword']);
 Route::post('reset-password', [ForgotPassword::class, 'resetPassword']);

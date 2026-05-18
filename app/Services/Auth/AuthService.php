@@ -368,6 +368,10 @@ class AuthService
                     'verified_at' => now(),
                 ]);
 
+                $user->update([
+                    'email_verified_at' => now(),
+                ]);
+
                 return Res('Email verified successfully', 200);
             }
 
