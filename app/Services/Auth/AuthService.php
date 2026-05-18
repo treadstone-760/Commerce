@@ -272,6 +272,7 @@ class AuthService
         try {
             DB::beginTransaction();
             $user = User::where('email', $request->email)->first();
+            // return $user;
 
             if (! $user) {
                 DB::rollBack();
@@ -284,13 +285,12 @@ class AuthService
                 ->whereNull('verified_at')
                 ->latest()
                 ->first();
-
+            // return $last_token;
             if (
                 $last_token &&
                 $last_token->created_at->gt(now()->subMinutes(3))
             ) {
                 DB::rollBack();
-
                 return Res('Please wait 3 minutes before resending', 400);
             }
 
@@ -357,20 +357,22 @@ class AuthService
                 ->where('type', 'email_verification_otp')->where('is_verified', false)
                 ->where('verified_at', null)->first();
 
+            if (! $verification) {
+                return Res('Invalid OTP', 400);
+            }
+            
             // check if otp is expired
             if ($verification->expired_at < now()) {
                 return Res('OTP has expired', 400);
             }
-
+            
             if (Hash::check($request->token, $verification->otp)) {
                 $verification->update([
                     'is_verified' => true,
                     'verified_at' => now(),
                 ]);
 
-                $user->update([
-                    'email_verified_at' => now(),
-                ]);
+                User::where('email' , $request->email)->update(['email_verified_at' => now()]);
 
                 return Res('Email verified successfully', 200);
             }
