@@ -23,7 +23,7 @@ class RegisterController
             $validate = Validator::make($request->all(), [
                 'name' => 'required|string',
                 "email" => 'required|email|unique:users,email',
-                "phone" => 'required|digits:10|unique:users,phone',
+                "phone" => 'required|unique:users,phone',
                 "password" => 'required|string',
                 "password_confirmation" => 'required|string|same:password',
             ]);

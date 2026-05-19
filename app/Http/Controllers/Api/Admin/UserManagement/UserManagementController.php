@@ -39,6 +39,8 @@ class UserManagementController extends Controller
             $insert->name = $request->name;
             $insert->email = $request->email;
             $insert->phone = $request->phone;
+            $insert->status = 'active';
+            $insert->email_verified_at = now(); 
             $insert->password = Hash::make($request->password);
             $insert->user_type = 'admin';
             $insert->save();
