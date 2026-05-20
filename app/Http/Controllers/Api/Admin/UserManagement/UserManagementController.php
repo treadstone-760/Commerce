@@ -193,13 +193,14 @@ class UserManagementController extends Controller
             if (! auth()->user()->can('role.create')) {
                 return Res('Unauthorized', 401);
             }
+
             $validate = Validator::make($request->all(), [
                 'name' => 'required|string|unique:roles,name',
             ]);
+
             if ($validate->fails()) {
                 return Res('Validation Error', 422, $validate->errors()->toArray());
             }
-
             $role = Role::create(['name' => $request->name]);
 
             activity()
@@ -228,6 +229,7 @@ class UserManagementController extends Controller
             }
             $validate = Validator::make(request()->all(), [
                 'name' => 'required|string|unique:roles,name,'.$id,
+                'permissions' => 'required|array',
             ]);
             if ($validate->fails()) {
                 return Res('Validation Error', 422, $validate->errors()->toArray());
@@ -238,6 +240,8 @@ class UserManagementController extends Controller
             }
             $role->name = request()->name;
             $role->save();
+
+            $role->syncPermissions(request()->permissions);
 
             activity()
                 ->causedBy(auth()->user())
