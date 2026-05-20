@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Activitylog\Models\Activity;
 
 class UserManagementController extends Controller
 {
@@ -362,6 +363,25 @@ class UserManagementController extends Controller
                 'file' => $e->getFile(),
             ]);
 
+            return Res('Something went wrong', 500);
+        }
+    }
+
+
+    public function viewAdminLogs(){
+        try{
+            if(! auth()->user()->can('user.view')) {
+                return Res('Unauthorized', 401);
+            }
+            $per_page = request()->per_page ?? 10;
+            $logs = Activity::with(['causer' , 'subject'])->paginate($per_page);
+            return Res('Successfull',200,$logs->toArray());
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
             return Res('Something went wrong', 500);
         }
     }
