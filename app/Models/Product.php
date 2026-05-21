@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use League\Uri\Builder;
 
 #[Fillable([
@@ -45,8 +47,11 @@ class Product extends Model
         });
     }
 
-    public function image(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class);
     }
+
+    // create a getter for images
+  
 }
