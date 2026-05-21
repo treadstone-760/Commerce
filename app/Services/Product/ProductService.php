@@ -142,11 +142,12 @@ class ProductService
         try {
 
             $data = Product::with([
+                'images',
                 'ProductOption' => function ($query) {
                     $query->with('ProductOptionValue');
                 },
                 'productVariant' => function ($query) {
-                    $query->with('ProductVariantOptionValue');
+                    $query->with(['ProductVariantOptionValue' , 'image'] );
                 },
             ]
             )
@@ -171,11 +172,12 @@ class ProductService
             $data = Category::with([
                 'Product' => function ($query) {
                     $query->with([
+                        'images',
                         'ProductOption' => function ($query) {
                             $query->with('ProductOptionValue');
                         },
                         'productVariant' => function ($query) {
-                            $query->with('ProductVariantOptionValue');
+                            $query->with(['ProductVariantOptionValue' , 'image'] );
                         },
                     ])->where('status', 1);
                 }])->find($id)->toArray();
@@ -200,11 +202,12 @@ class ProductService
     {
         try {
             $data = Product::with([
+                'images',
                 'ProductOption' => function ($query) {
                     $query->with('ProductOptionValue');
                 },
                 'productVariant' => function ($query) {
-                    $query->with('ProductVariantOptionValue');
+                    $query->with(['ProductVariantOptionValue' , 'image'] );
                 }])->find($id);
 
             if (! $data) {
