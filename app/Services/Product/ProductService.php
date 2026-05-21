@@ -2,15 +2,19 @@
 
 namespace App\Services\Product;
 
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\ProductOption;
 use App\Models\ProductOptionValue;
 use App\Models\ProductVariant;
+use App\Models\ProductVariantImage;
 use App\Models\ProductVariantOptionValue;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Exists;
 
 class ProductService
 {
@@ -38,6 +42,21 @@ class ProductService
                 'category_id' => $request->category_id,
                 'is_active' => $request->is_active,
             ]);
+            // Add product images
+            if ($request->has('images')) {
+                foreach ($request->images as $image) {
+
+                    $product_images = new ProductImage;
+                    $product_images->product_id = $product->id;
+                    //
+                    $img = convertFile($image);
+                    // save to storage
+                    Storage::disk('public')->put($img['file_name'], $img['file']);
+                    $product_images->image = $img['file_name'];
+                    $product_images->save();
+
+                }
+            }
 
             if ($request->has('options')) {
                 foreach ($request->options as $option) {
@@ -63,6 +82,7 @@ class ProductService
 
             if ($request->has('variants')) {
                 foreach ($request->variants as $variant) {
+                    // return $variant['images'];
                     $_variant = ProductVariant::create([
                         'sku' => $variant['sku'],
                         'product_id' => $product->id,
@@ -70,6 +90,19 @@ class ProductService
                         'stock' => $variant['stock'],
                         // 'attributes' => $variant['attributes']
                     ]);
+                    if(isset($variant['images'])) {
+                        foreach ($variant['images'] as $image) {
+                            
+                            $product_images = new ProductVariantImage();
+                            $product_images->product_variant_id = $_variant->id;
+                            //
+                            $img = convertFile($image);
+                            // save to storage
+                            Storage::disk('public')->put($img['file_name'], $img['file']);
+                            $product_images->image = $img['file_name'];
+                            $product_images->save();
+                        }
+                    }
 
                     foreach ($variant['attributes'] as $attribute) {
 
@@ -111,12 +144,12 @@ class ProductService
             $data = Product::with([
                 'ProductOption' => function ($query) {
                     $query->with('ProductOptionValue');
-                }, 
+                },
                 'productVariant' => function ($query) {
                     $query->with('ProductVariantOptionValue');
-                }
-                ]
-                )
+                },
+            ]
+            )
                 ->get()->toArray();
 
             return Res('Products', 200, $data);
@@ -132,76 +165,84 @@ class ProductService
         }
     }
 
-    public static function viewByCategory($id){
-        try{
+    public static function viewByCategory($id)
+    {
+        try {
             $data = Category::with([
                 'Product' => function ($query) {
                     $query->with([
                         'ProductOption' => function ($query) {
                             $query->with('ProductOptionValue');
-                        }, 
+                        },
                         'productVariant' => function ($query) {
                             $query->with('ProductVariantOptionValue');
-                        }
+                        },
                     ])->where('status', 1);
                 }])->find($id)->toArray();
 
             return Res('Products', 200, [
-                'category' => $data
+                'category' => $data,
             ]);
-            
-        }catch(Exception $e){
+
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+
             return Res('Server Error', 500);
         }
-        
+
     }
 
-    public static function viewSingle($id){
-        try{
+    public static function viewSingle($id)
+    {
+        try {
             $data = Product::with([
                 'ProductOption' => function ($query) {
                     $query->with('ProductOptionValue');
-                }, 
+                },
                 'productVariant' => function ($query) {
                     $query->with('ProductVariantOptionValue');
                 }])->find($id);
 
-            if(!$data){
+            if (! $data) {
                 return Res('Product not found', 404);
             }
+
             return Res('Product', 200, [
-                'product' => $data->toArray()
+                'product' => $data->toArray(),
             ]);
-        }catch(Exception $e){
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+
             return Res('Server Error', 500);
         }
     }
 
-    public static function changeProductStatus($id){
-        try{
+    public static function changeProductStatus($id)
+    {
+        try {
             $product = Product::find($id);
-            if(!$product){
+            if (! $product) {
                 return Res('Product not found', 404);
             }
-            $product->status = !$product->status;
+            $product->status = ! $product->status;
             $product->save();
+
             return Res('Product status changed successfully', 200);
-        }catch(Exception $e){
+        } catch (Exception $e) {
             Log::error([
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+
             return Res('Server Error', 500);
         }
     }

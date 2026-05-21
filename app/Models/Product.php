@@ -44,4 +44,9 @@ class Product extends Model
                 ->orWhere('description', 'like', '%'.$search.'%');
         });
     }
+
+    public function image(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProductImage::class);
+    }
 }

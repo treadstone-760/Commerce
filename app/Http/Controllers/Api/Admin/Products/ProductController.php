@@ -27,7 +27,7 @@ class ProductController extends Controller
                 'currency' => 'required|string',
                 'options' => 'nullable|array',
                 'variants' => 'nullable|array',
-
+                'images' => 'nullable|array',
             ];
 
             if ($request->has('options')) {
@@ -44,6 +44,7 @@ class ProductController extends Controller
                     'variants.*.price' => 'required|numeric',
                     'variants.*.stock' => 'required|integer',
                     'variants.*.attributes' => 'required|array',
+                    'variants.*.images' => 'nullable|array',
                 ]);
             }
 
