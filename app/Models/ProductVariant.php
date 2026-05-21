@@ -27,4 +27,8 @@ class ProductVariant extends Model
             'option_value_id',
         )->with('ProductOption');
     }
+
+    public function image(){
+        return $this->hasMany(ProductVariantImage::class);
+    }
 }
