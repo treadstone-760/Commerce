@@ -54,6 +54,7 @@ class RolePermissionSeeder extends Seeder
             $super_admin_permission = Permission::firstOrCreate(['name' => 'category.edit', 'guard_name' => 'sanctum']);
             $super_admin_permission = Permission::firstOrCreate(['name' => 'category.show', 'guard_name' => 'sanctum']);
             $super_admin_permission = Permission::firstOrCreate(['name' => 'category.delete', 'guard_name' => 'sanctum']);
+            $super_admin_permission = Permission::firstOrCreate(['name' => 'category.update', 'guard_name' => 'sanctum']);
             $super_admin_permission = Permission::firstOrCreate(['name' => 'category.status_update', 'guard_name' => 'sanctum']);
             
             //Products

@@ -19,7 +19,7 @@ class CategoryController extends Controller
         try {
 
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string',
+                'name' => 'required|string|unique:categories,name',
                 'description' => 'required|string',
                 'parent_id' => 'nullable|exists:categories,id',
                 // "is_active" => 'required|boolean',
