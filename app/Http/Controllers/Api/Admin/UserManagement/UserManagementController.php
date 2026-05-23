@@ -374,7 +374,13 @@ class UserManagementController extends Controller
                 return Res('Unauthorized', 401);
             }
             $per_page = request()->per_page ?? 10;
-            $logs = Activity::with(['causer' , 'subject'])->paginate($per_page);
+            $start_date = request()->start_date ?? null;
+            $end_date = request()->end_date ?? null;
+            $action = request()->action ?? null;
+            
+            $logs = Activity::with(['causer' , 'subject'])
+                    ->search($start_date , $end_date , $action)
+                    ->paginate($per_page);
             return Res('Successfull',200,$logs->toArray());
         }catch(Exception $e){
             Log::error([
