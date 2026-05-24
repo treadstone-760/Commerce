@@ -70,6 +70,14 @@ class AuthService
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
+            if($user->user_type == 'admin'){
+                //spartie activity log
+                 activity()
+                ->causedBy(auth()->user())
+                ->performedOn($user)
+                ->log('Admin Update');
+            }
+
             return Res('Login successful', 200,
                 ['token' => $token,
                     'redirect' => $user->user_type == 'customer' ? 'customer' : 'admin',
