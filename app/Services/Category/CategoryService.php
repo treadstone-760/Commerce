@@ -45,7 +45,7 @@ class CategoryService
     public static function viewAll()
     {
         try {
-            $data = Category::with('children')->whereNull('parent_id')->get()->toArray();
+            $data = Category::with('childrenRecursive')->whereNull('parent_id')->get()->toArray();
 
             return Res('Categories', 200, $data);
         } catch (Exception $e) {

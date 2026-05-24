@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
     'name',
@@ -11,13 +11,11 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
     'description',
     'parent_id',
     'is_active',
-    
+
 ])]
 class Category extends Model
 {
-    
-
-     public function parent()
+    public function parent()
     {
         return $this->belongsTo(Category::class, 'parent_id');
     }
@@ -26,7 +24,14 @@ class Category extends Model
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
-     public function product(){
+
+    public function product()
+    {
         return $this->hasMany(Product::class);
+    }
+
+    public function childrenRecursive()
+    {
+        return $this->children()->with('childrenRecursive');
     }
 }
