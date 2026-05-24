@@ -153,8 +153,11 @@ class CategoryService
                 'is_active' => ! $category->is_active,
             ];
             $category->update($data);
+            
+            $find_children = Category::where('parent_id' , $category->id)->update(['is_active' => $category->is_active]);
+           
 
-            return Res('Category status updated successfully', 200, $category->toArray());
+            return Res('Category status updated successfully', 200, $category->load('childrenRecursive')->toArray());
 
         } catch (Exception $e) {
             Log::error([
@@ -162,6 +165,7 @@ class CategoryService
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
             ]);
+            return Res('Something went wrong', 500);
         }
 
     }
