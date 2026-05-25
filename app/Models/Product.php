@@ -53,5 +53,5 @@ class Product extends Model
     }
 
     // create a getter for images
-  
+    
 }

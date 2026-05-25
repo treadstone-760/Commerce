@@ -6,6 +6,7 @@ use App\Models\Category;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryService
 {
@@ -20,6 +21,7 @@ class CategoryService
     public static function add($request)
     {
         try {
+            
 
             $category = Category::create([
                 'name' => $request->name,
@@ -28,6 +30,22 @@ class CategoryService
                 'parent_id' => $request->parent_id,
                 'is_active' => $request->is_active,
             ]);
+
+             if ($request->has('image')) {
+               
+
+                    $category_image = new Category;
+                 
+                    //
+                    $img = convertFile($request->image);
+                   
+                    // save to storage
+                    Storage::disk('public')->put( 'categories/' .$img['file_name'], $img['file']);
+                    $category->image = 'categories/' .$img['file_name'];
+                    $category->save();
+
+                
+            }
 
             return Res('Category added successfully', 200, $category->toArray());
 
@@ -144,7 +162,6 @@ class CategoryService
     public static function statusUpdate($request, $id)
     {
         try {
-
             $category = Category::find($id);
             if (! $category) {
                 return Res('Category not found', 404);
@@ -153,10 +170,7 @@ class CategoryService
                 'is_active' => ! $category->is_active,
             ];
             $category->update($data);
-            
             $find_children = Category::where('parent_id' , $category->id)->update(['is_active' => $category->is_active]);
-           
-
             return Res('Category status updated successfully', 200, $category->load('childrenRecursive')->toArray());
 
         } catch (Exception $e) {

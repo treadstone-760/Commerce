@@ -23,6 +23,7 @@ class CategoryController extends Controller
                 'description' => 'required|string',
                 'parent_id' => 'nullable|exists:categories,id',
                 // "is_active" => 'required|boolean',
+                'image' => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
