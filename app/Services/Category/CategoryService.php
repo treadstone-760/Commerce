@@ -113,10 +113,24 @@ class CategoryService
                 'slug' => Str::slug($request->name),
                 'description' => $request->description,
             ];
+               if ($request->has('image')) {
+               
+
+                    $category_image = new Category;
+                 
+                    //
+                    $img = convertFile($request->image);
+                   
+                    // save to storage
+                    Storage::disk('public')->put( 'categories/' .$img['file_name'], $img['file']);
+                    $category->image = 'categories/' .$img['file_name'];
+                    $category->save(); 
+            }
 
             if ($request->has('parent_id')) {
                 $data['parent_id'] = $request->parent_id;
             }
+           
 
             if ($request->has('is_active')) {
                 $data['is_active'] = $request->is_active;
@@ -124,7 +138,10 @@ class CategoryService
 
             $category->update($data);
 
-            return Res('Category updated successfully', 200, $category->toArray());
+             $find_children = Category::where('parent_id' , $category->id)->update(['is_active' => $category->is_active]);
+
+
+            return Res('Category updated successfully', 200, $category->fresh()->toArray());
 
         } catch (Exception $e) {
             Log::error([
