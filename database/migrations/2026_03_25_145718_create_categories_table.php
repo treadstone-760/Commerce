@@ -20,6 +20,7 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('categories')
                 ->nullOnDelete();
+            $table->string('image')->nullable();
             $table->boolean('is_active')->default('1');
             $table->timestamps();
         });

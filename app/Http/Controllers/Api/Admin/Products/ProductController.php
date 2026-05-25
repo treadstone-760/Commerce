@@ -33,7 +33,6 @@ class ProductController extends Controller
             if ($request->has('options')) {
                 $validate = array_merge($validate, [
                     'options.*.name' => 'required|string',
-
                     'options.*.values' => 'required|array',
                     'options.*.values.*' => 'required|string',
                 ]);
