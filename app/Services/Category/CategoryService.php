@@ -108,12 +108,17 @@ class CategoryService
             if (! $category) {
                 return Res('Category not found', 404);
             }
+            if($request->is_active == $category->is_active){
+                $category = Category::find($id);
+                $category->toggleTreeStatus();
+            }
+
             $data = [
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'description' => $request->description,
             ];
-               if ($request->has('image')) {
+            if ($request->has('image')) {
                
 
                     $category_image = new Category;
@@ -132,13 +137,14 @@ class CategoryService
             }
            
 
-            if ($request->has('is_active')) {
-                $data['is_active'] = $request->is_active;
-            }
+            // if ($request->has('is_active')) {
+            //     $data['is_active'] = $request->is_active;
+            // }
 
             $category->update($data);
 
-             $find_children = Category::where('parent_id' , $category->id)->update(['is_active' => $category->is_active]);
+            //  $find_children = Category::where('parent_id' , $category->id)->update(['is_active' => $category->is_active]);
+
 
 
             return Res('Category updated successfully', 200, $category->fresh()->toArray());
@@ -180,14 +186,17 @@ class CategoryService
     {
         try {
             $category = Category::find($id);
+            $category->toggleTreeStatus();
             if (! $category) {
                 return Res('Category not found', 404);
             }
-            $data = [
-                'is_active' => ! $category->is_active,
-            ];
-            $category->update($data);
-            $find_children = Category::where('parent_id' , $category->id)->update(['is_active' => $category->is_active]);
+            // $data = [
+            //     'is_active' => ! $category->is_active,
+            // ];
+            // $category->update($data);
+            // $find_children = Category::where('parent_id' , $category->id)->toggleTreeStatus();
+
+            
             return Res('Category status updated successfully', 200, $category->load('childrenRecursive')->toArray());
 
         } catch (Exception $e) {
