@@ -44,4 +44,27 @@ class Category extends Model
                 : null,
         );
     }
+
+    public function toggleTreeStatus(): void
+    {
+        $newStatus = ! $this->is_active;
+
+        $ids = [];
+        $this->collectDescendantIds($ids);
+
+        $ids[] = $this->id;
+
+        static::whereIn('id', $ids)->update([
+            'is_active' => $newStatus
+        ]);
+    }
+
+    private function collectDescendantIds(array &$ids): void
+    {
+        foreach ($this->children as $child) {
+            $ids[] = $child->id;
+            $child->load('children');
+            $child->collectDescendantIds($ids);
+        }
+    }
 }
