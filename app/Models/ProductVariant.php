@@ -31,4 +31,11 @@ class ProductVariant extends Model
     public function image(){
         return $this->hasMany(ProductVariantImage::class);
     }
+
+    public static function booted(){
+        static::deleting(function ($variant) {
+            $variant->ProductVariantOptionValue()->delete();
+            // $variant->image()->delete();
+        });
+    }
 }

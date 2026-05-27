@@ -15,6 +15,8 @@ use League\Uri\Builder;
     'currency',
     'category_id',
     'status',
+    'images',
+    'featured',
 
 ])]
 class Product extends Model

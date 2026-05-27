@@ -27,6 +27,7 @@ class ProductController extends Controller
                 'currency' => 'required|string',
                 'options' => 'nullable|array',
                 'variants' => 'nullable|array',
+                'featured' => 'nullable|boolean',
                 'images' => 'nullable|array',
             ];
 
@@ -119,6 +120,56 @@ class ProductController extends Controller
                 return Res("Unauthorized" , 401);
             }
             return ProductService::changeProductStatus($id);
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+            return Res('Server Error', 500);
+        }
+    }
+
+    public function updateProduct($id , Request $request){
+        try{
+            if(!auth()->user()->can('products.update')){
+                return Res("Unauthorized" , 401);
+            }
+            //validate Products input
+            $validate = [
+                'name' => 'required|string',
+                'description' => 'required|string',
+                'base_price' => 'required|numeric',
+                'category_id' => 'required|exists:categories,id',
+                'currency' => 'required|string',
+                'options' => 'nullable|array',
+                'variants' => 'nullable|array',
+                'featured' => 'nullable|boolean',
+                'images' => 'nullable|array',
+            ];
+
+            if ($request->has('options')) {
+                $validate = array_merge($validate, [
+                    'options.*.name' => 'required|string',
+                    'options.*.values' => 'required|array',
+                    'options.*.values.*' => 'required|string',
+                ]);
+            }
+            if ($request->has('variants')) {
+                $validate = array_merge($validate, [
+                    'variants.*.sku' => 'required|string',
+                    'variants.*.price' => 'required|numeric',
+                    'variants.*.stock' => 'required|integer',
+                    'variants.*.attributes' => 'required|array',
+                    'variants.*.images' => 'nullable|array',
+                ]);
+            }
+
+            $validate = Validator::make(request()->all(), $validate);
+            if($validate->fails()){
+                return Res("Validation Error" , 422 , $validate->errors()->toArray());
+            }
+            return ProductService::updateProduct($request , $id);
         }catch(Exception $e){
             Log::error([
                 'message' => $e->getMessage(),

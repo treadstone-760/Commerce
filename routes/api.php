@@ -52,6 +52,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('view-single-product/{id}', [ProductController::class, 'retrieveSingleProduct']);
     Route::post('change-product-status/{id}', [ProductController::class, 'changeProductStatus']);
     Route::post('logout' , [AuthController::class, 'logout']);
+    Route::put('update-product/{id}', [ProductController::class, 'updateProduct']);
 });
 
 

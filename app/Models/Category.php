@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'name',
@@ -36,6 +37,11 @@ class Category extends Model
         return $this->children()->with('childrenRecursive');
     }
 
+    public function parentRecursive()
+    {
+        return $this->parent()->with('parentRecursive');
+    }
+
     protected function image(): Attribute
     {
         return Attribute::make(
@@ -55,7 +61,7 @@ class Category extends Model
         $ids[] = $this->id;
 
         static::whereIn('id', $ids)->update([
-            'is_active' => $newStatus
+            'is_active' => $newStatus,
         ]);
     }
 
@@ -66,5 +72,21 @@ class Category extends Model
             $child->load('children');
             $child->collectDescendantIds($ids);
         }
+    }
+
+    public function getFullNameAttribute()
+    {
+        $names = [];
+        $category = $this;
+
+        while ($category) {
+            array_unshift($names, $category->slug);
+            $category = $category->parentRecursive;
+        }
+
+        $names = implode('-', $names);
+        $lower_name = strtolower($names);
+        $lower_name = preg_replace('/[^A-Za-z0-9-]/', '', $lower_name);
+        return $lower_name;
     }
 }
