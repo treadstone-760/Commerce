@@ -3,10 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use League\Uri\Builder;
+use App\Models\ViewedProduct;
 
 #[Fillable([
     'name',
@@ -54,6 +54,11 @@ class Product extends Model
         return $this->hasMany(ProductImage::class);
     }
 
+    public function views()
+    {
+        return $this->hasMany(ViewedProduct::class);
+    }
+
     // create a getter for images
-    
+
 }
