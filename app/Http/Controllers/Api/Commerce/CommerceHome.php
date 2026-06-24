@@ -18,6 +18,7 @@ class CommerceHome extends Controller
             // Get all products
             $paginate = request('paginate', 10);
             $products = Product::with([
+                'images',
                 'ProductOption' => function ($query) {
                     $query->with('ProductOptionValue');
                 },
