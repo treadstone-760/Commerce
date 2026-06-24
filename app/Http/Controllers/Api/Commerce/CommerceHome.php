@@ -48,12 +48,13 @@ class CommerceHome extends Controller
         try {
             // return auth('sanctum')->user();
             $product = Product::with([
+                'images',
                 'ProductOption' => function ($query) {
                     $query->with('ProductOptionValue');
-                },
+                } , 
                 'productVariant' => function ($query) {
                     $query->with('ProductVariantOptionValue');
-                },
+                },'productVariant.image'
             ])->where('id', $id)->first();
 
             if (! $product) {
