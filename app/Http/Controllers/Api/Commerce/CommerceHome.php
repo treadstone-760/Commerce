@@ -118,4 +118,32 @@ class CommerceHome extends Controller
             return Res('Something went wrong', 500);
         }
     }
+
+
+
+
+    public function getFeaturedProduct(){
+        try{
+
+            //get featured Products
+            $paginate = request('paginate', 10);
+            $products = Product::with([
+               'images'
+            ])->where('status', 1)
+                ->where('featured', 1)
+                ->paginate($paginate);
+
+
+           return $products;
+
+        }catch(Exception $e){
+            Log::error([
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return Res('Something went wrong', 500);
+        }
+    }
 }

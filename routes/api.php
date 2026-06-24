@@ -61,6 +61,7 @@ Route::get('get/product' , [ CommerceHome::class, 'getProducts']);
 Route::get('get/product/{id}' , [ CommerceHome::class, 'viewsingleProduct']);
 Route::get('get/category' , [ CommerceHome::class, 'getCategories']);
 Route::get('get/category/{id}' , [ CommerceHome::class, 'viewSingleCategoryWithProducts']);
+Route::get('get/FeaturedProduct' , [ CommerceHome::class, 'getFeaturedProduct']);
 
 //Cart
 Route::post('add-to-cart/{id}' , [ OrderController::class, 'addToCart']);

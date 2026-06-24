@@ -16,8 +16,6 @@ class RolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
-
-        
         $user = User::where('email', 'kboahene760@gmail.com')->first();
         if(!$user){
             $user = User::create([
